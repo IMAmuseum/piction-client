@@ -1,0 +1,10 @@
+<?php
+
+return [
+    'PICTION_ENDPOINT_URL' => env('PICTION_ENDPOINT_URL', ''),
+    'PICTION_IMAGE_URL' => env('PICTION_IMAGE_URL', ''),
+    'PICTION_USERNAME' => env('PICTION_USERNAME', ''),
+    'PICTION_PASSWORD' => env('PICTION_PASSWORD', ''),
+    'PICTION_FORMAT' => env('PICTION_FORMAT', 'JSON'),
+    'PICTION_SURL' => env('PICTION_SURL', '')
+];
