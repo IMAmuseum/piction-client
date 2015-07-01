@@ -1,6 +1,6 @@
 ## Piction Client
 
-Piction API for Laravel 5
+Piction API SDK
 
 ### Development Setup
 Add `imamuseum` folder to the root of your project.
@@ -16,27 +16,6 @@ Set up `psr-4` autoload in `composer.json`:
 }
 ```
 
-### Laravel Setup
-Open `/config/app.php` add service provider to `providers` array:
-```php
-'providers' => [
-	Imamuseum\PictionClient\PictionServiceProvider::class,
-]
-```
-
-Add the alias:
-```php
-'aliases' => [
-	'Piction'   => Imamuseum\PictionClient\PictionFacade::class,
-]
-```
-
-## Configuration
-Run `php artisan vendor:publish` and modify the config file:
-```
-/config/piction-client.php
-```
-
 ### Environmental Variables Setup
 Add Piction Variables to your `.env`:
 ```
@@ -47,3 +26,5 @@ PICTION_PASSWORD=null
 PICTION_FORMAT=null
 PICTION_SURL=null
 ```
+
+### TODO: Add private repository composer installation instructions.
