@@ -4,12 +4,6 @@ namespace Imamuseum\PictionClient;
 
 use Exception;
 
-class PictionPaginatedResponse
-{
-    private $object;
-
-}
-
 class Piction
 {
     /*
@@ -92,12 +86,14 @@ class Piction
             $url .= strtoupper($key) . '/' . $this->_prepareValue($value) . '/';
         }
 
+        // Add format to url if the correct parameters exist
         if (isset($this->format) && !is_null($this->format) && !isset($params['format'])) {
             $url .= $this->format . '/TRUE/';
         } elseif (isset($params['format'])) {
             $url .= $params['format'] . '/TRUE/';
         }
 
+        // Build the url to request
         $url = $this->endpoint . $piction_method . '/surl/' . $this->surl . '(/' . $url . ')';
 
         return $url;
@@ -109,9 +105,11 @@ class Piction
         Convert values to Piction values
         */
         if ($value != "") {
+            // Replace spaces with %20 to send params correctly
             $value = str_replace(' ', '%20', $value);
         }
 
+        // Check if the value is a boolean and set to correct type of string
         if ($this->_is_bool($value)) {
             if (($value != "") && ($value !== FALSE)) {
                 $value = 'TRUE';
@@ -126,7 +124,7 @@ class Piction
     private function _request($piction_method, $params)
     {
         /*
-        Make a request to Piction and return response in the formated requested.
+        Make a request to Piction and return response in the format requested.
         */
 
         // We don't send parameters as ?key=value because Piction uses a specific URL structure for it.
@@ -154,14 +152,14 @@ class Piction
         if(curl_exec($curl) === false) {
             echo 'Curl error: ' . curl_error($curl);
         } else {
-            $ch = str_replace(",\n}\n}\n}", "}", curl_exec($curl));
             // Send the request & save response to $response
-            $response = $ch;
+            $response = curl_exec($curl);
         }
 
         // Close request to clear up some resources
         curl_close($curl);
 
+        // Check the response to see if a surl validation is thrown
         $response = $this->_checkResponse($response, $piction_method, $params);
 
         return $response;
@@ -169,6 +167,7 @@ class Piction
 
     private function _checkResponse($response, $piction_method, $params)
     {
+        // If surl validation fails, get a new surl and run the request again
         if (strlen(strstr($response,'SURL failed validation')) > 0){
             $this->surl = $this->authenticate();
             $response = $this->_request($piction_method, $params);
@@ -181,76 +180,10 @@ class Piction
     {
         /*
         Call a piction method and return response in the format requested.
-        This method injects the authentication token
-        in all calls.
+        This method injects the authentication token in all calls.
         */
 
         $response = $this->_request($piction_method, $params);
-
-        // Guessing if the response is a Piction paginated response. If the following conditions
-        // happen the response contains a 't' attribute ( total ) and a 'r' attribute ( results )
-        // If response is paginated and follow_pagination is True. Wrap response with PictionPaginatedResponse
-        // if ($follow_pagination == True) {
-        //     $header = $response['s'];
-        //     $data   = $response['r'];
-        //     $total  = int($header['t']);
-        //     $start  = $params['START'];
-        //     // Check if maxrows exists if not use 100 objects as default
-        //     //$params = {k.upper(): v for k, v in params.items()};
-        //     $page_size = $params['MAXROWS'] = int($params['MAXROWS']);
-        //     // if(isset($data) && isset($total)){
-        //     //     $result = PictionPaginatedResponse($data, $total, $start, $this->_next_page($piction_method, $params), $page_size);
-        //     //     $response['r'] = $result;
-        //     // }
-        // }
-
-        return $response;
-    }
-
-    # Piction service methods
-    public function metadata($umo_id=null, $query=null, $ptr_id=null, $from_umo_id=null, $metatag_all=False)
-    {
-
-        /*
-        Update UMO metadata of a given ptr_id, query or umo_id
-        */
-
-        $piction_method = 'metadata';
-
-        // This Piction webservice requires a specific order or attributes
-        $params = [];
-
-        if (!is_null($umo_id)) {
-            $params['umo_id'] = $umo_id;
-        } elseif (!is_null($query)) {
-            $params['query'] = $query;
-        } elseif (!is_null($ptr_id)){
-            $params['ptr_id'] = $ptr_id;
-        } else {
-            echo $msg = 'Piction API endpoint "metadata" needs at least one of the following attributes [umo_id, query, ptr_id]';
-            // raise exceptions.PictionMissingParameter(msg)
-        }
-
-        // if (!is_null($from_umo_id)) {
-        //     foreach ($metadata as $metatag => $value){
-        //         $params['metatag'] = $metatag;
-        //         $params['value'] = $value;
-        //     }
-        // } else {
-        //     # Use webservice to copy metadata from a given umo_id
-        //     $params['from_umo_id'] = $from_umo_id;
-        //     if (!isset($metatag_all)) {
-        //         foreach ($metatags as $metatag) {
-        //             $params['metatag'] = $metatag;
-        //         }
-        //     } else {
-                $params['metatag_all'] = True;
-        //     }
-        // }
-
-        $params['format'] = 'XML';
-
-        $response = $this->call($piction_method, $params);
 
         return $response;
     }
