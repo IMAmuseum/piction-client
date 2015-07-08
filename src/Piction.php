@@ -77,11 +77,11 @@ class Piction
 
     private function _build_url($piction_method, $params)
     {
-        # Convert parameters to Piction URL structure
-        # http://piction.host.com/r/st/[method]/surl/[auth_token](/[param_name]/[param_value]/..)
+        // Convert parameters to Piction URL structure
+        // http://piction.host.com/r/st/[method]/surl/[auth_token](/[param_name]/[param_value]/..)
         $url = "";
 
-        # Format a pair key-value list
+        // Format a pair key-value list
         foreach ($params as $key => $value) {
             $url .= strtoupper($key) . '/' . $this->_prepare_value($value) . '/';
         }
@@ -104,8 +104,8 @@ class Piction
             $value = str_replace(' ', '%20', $value);
         }
 
-        if (is_bool($value)) {
-            if ( $value != ""){
+        if ($this->_is_bool($value)) {
+            if (($value != "") && ($value !== FALSE)) {
                 $value = 'TRUE';
             } else {
                 $value = 'FALSE';
@@ -133,6 +133,7 @@ class Piction
 
     private function _curlCall($url)
     {
+        //print($url);
         // Get cURL resource
         $curl = curl_init();
         // Set some options - we are passing in a useragent too here
@@ -142,12 +143,12 @@ class Piction
             CURLOPT_URL => $url
         ));
 
-        if(curl_exec($curl) === false)
-        {
+        if(curl_exec($curl) === false) {
             echo 'Curl error: ' . curl_error($curl);
         } else {
+            $ch = str_replace(",\n}\n}\n}", "}", curl_exec($curl));
             // Send the request & save response to $response
-            $response = json_decode(curl_exec($curl));
+            $response = json_decode($ch);
         }
 
         // Close request to clear up some resources
@@ -156,9 +157,31 @@ class Piction
         return $response;
     }
 
-    public function getResponse()
+    # FORMAT RESPONSES
+    private function _to_raw($response)
     {
+        return string($response);
+    }
 
+    private function _to_json($response)
+    {
+        try {
+            return json_decode($response);
+        }
+        catch (Exception $e) {
+            echo 'Caught exception: ', $e->getMessage(), '\n';
+        }
+    }
+
+    private function _to_xml($response)
+    {
+        try {
+            $xml = new SimpleXMLElement(string($response));
+        }
+        catch (Exception $e) {
+            echo 'Caught exception: ', $e->getMessage(), '\n';
+        }
+        return $xml->asXML();
     }
 
     public function call($piction_method, $params, $follow_pagination=False)
@@ -169,34 +192,88 @@ class Piction
         in all calls.
         */
 
-        // append authentication token
-        // if (!isset($params['SURL'])){
-        //     $params['SURL'] = $this->surl;
-        // }
-
         $response = $this->_request($piction_method, $params);
 
         // Guessing if the response is a Piction paginated response. If the following conditions
         // happen the response contains a 't' attribute ( total ) and a 'r' attribute ( results )
         // If response is paginated and follow_pagination is True. Wrap response with PictionPaginatedResponse
-        if ($follow_pagination == True){
-        //     header = response.get('s', {})
-        //     data   = response.get('r', None)
-        //     total  = int(header.get('t', None))
-        //     start  = params.get('START', 0)
-        //     # Check if maxrows exists if not use 100 objects as default
-        //     params = {k.upper(): v for k, v in params.items()}
-        //     page_size = params['MAXROWS'] = int(params.get('MAXROWS', 100))
-        //     if data and total:
-        //         result = PictionPaginatedResponse(data, total, start, self._next_page(piction_method, params), page_size=page_size)
-        //         response['r'] = result
+        if ($follow_pagination == True) {
+            $header = $response['s'];
+            $data   = $response['r'];
+            $total  = int($header['t']);
+            $start  = $params['START'];
+            // Check if maxrows exists if not use 100 objects as default
+            //$params = {k.upper(): v for k, v in params.items()};
+            $page_size = $params['MAXROWS'] = int($params['MAXROWS']);
+            // if(isset($data) && isset($total)){
+            //     $result = PictionPaginatedResponse($data, $total, $start, $this->_next_page($piction_method, $params), $page_size);
+            //     $response['r'] = $result;
+            // }
         }
 
         return json_encode($response);
     }
 
-    public function metadata()
+    # Piction service methods
+    public function metadata($umo_id=null, $query=null, $ptr_id=null, $from_umo_id=null, $metatag_all=False)
     {
 
+        /*
+        Update UMO metadata of a given ptr_id, query or umo_id
+        */
+
+        $piction_method = 'metadata';
+
+        # This Piction webservice requires a specific order or attributes
+        $params = [];
+
+        if (!is_null($umo_id)) {
+            $params['umo_id'] = $umo_id;
+        } elseif (!is_null($query)) {
+            $params['query'] = $query;
+        } elseif (!is_null($ptr_id)){
+            $params['ptr_id'] = $ptr_id;
+        } else {
+            echo $msg = 'Piction API endpoint "metadata" needs at least one of the following attributes [umo_id, query, ptr_id]';
+            // raise exceptions.PictionMissingParameter(msg)
+        }
+
+        // if (!is_null($from_umo_id)) {
+        //     foreach ($metadata as $metatag => $value){
+        //         $params['metatag'] = $metatag;
+        //         $params['value'] = $value;
+        //     }
+        // } else {
+        //     # Use webservice to copy metadata from a given umo_id
+        //     $params['from_umo_id'] = $from_umo_id;
+        //     if (!isset($metatag_all)) {
+        //         foreach ($metatags as $metatag) {
+        //             $params['metatag'] = $metatag;
+        //         }
+        //     } else {
+                $params['metatag_all'] = True;
+        //     }
+        // }
+
+        return $this->call($piction_method, $params);
+    }
+
+    /*
+        Helper Functions
+    */
+
+    // Test for boolean variable where is_bool() returns false positive;
+    private function _is_bool($var) {
+        if (!is_string($var)) return (bool) $var;
+        switch (strtolower($var)) {
+            case '1':
+            case 'true':
+            case 'on':
+            case 'yes':
+            case 'y':
+                return true;
+        default:
+            return false;
+        }
     }
 }
