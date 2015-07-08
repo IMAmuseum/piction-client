@@ -152,7 +152,7 @@ class Piction
         if(curl_exec($curl) === false) {
             echo 'Curl error: ' . curl_error($curl);
         } else {
-            // Send the request & save response to $response
+            // Send the request & save response
             $response = curl_exec($curl);
         }
 
@@ -176,7 +176,7 @@ class Piction
         return $response;
     }
 
-    public function call($piction_method, $params, $follow_pagination=False)
+    public function call($piction_method, $params)
     {
         /*
         Call a piction method and return response in the format requested.
