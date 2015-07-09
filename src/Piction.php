@@ -33,6 +33,8 @@ class Piction
         $this->password = getenv('PICTION_PASSWORD');
         $this->format   = getenv('PICTION_FORMAT');
         $this->surl     = getenv('PICTION_SURL');
+        $this->piction_method = "";
+        $this->params   = [];
 
         // Check if surl is null and if so lets get a new one to store.
         if ($this->surl === "null" || $this->surl === "") {
@@ -40,6 +42,7 @@ class Piction
         }
     }
 
+    /* Autenticate to get new token for Piction access */
     public function authenticate()
     {
         $url = $this->endpoint .
@@ -47,13 +50,14 @@ class Piction
             '/PASSWORD/' . $this->password .
             '/' . $this->format . '/TRUE';
 
-        $response = $this->_curlCall($url, $piction_method="", $params=[]);
+        $response = $this->_curlCall($url);
         $response = $this->_to_json($response);
         $this->saveToken($response);
 
         return $response->SURL;
     }
 
+    /* Save token into the .env file */
     public function saveToken($response)
     {
         // get current .env and its contents
@@ -75,35 +79,35 @@ class Piction
         file_put_contents($file, $newFileContent);
     }
 
-    private function _buildURL($piction_method, $params)
+    /*
+    Convert parameters to Piction URL structure
+    http://piction.host.com/r/st/[method]/surl/[auth_token](/[param_name]/[param_value]/..)
+    */
+    private function _buildURL()
     {
-        // Convert parameters to Piction URL structure
-        // http://piction.host.com/r/st/[method]/surl/[auth_token](/[param_name]/[param_value]/..)
         $url = "";
 
         // Format a pair key-value list
-        foreach ($params as $key => $value) {
+        foreach ($this->params as $key => $value) {
             $url .= strtoupper($key) . '/' . $this->_prepareValue($value) . '/';
         }
 
         // Add format to url if the correct parameters exist
-        if (isset($this->format) && !is_null($this->format) && !isset($params['format'])) {
+        if (isset($this->format) && !is_null($this->format) && !isset($this->params['format'])) {
             $url .= $this->format . '/TRUE/';
-        } elseif (isset($params['format'])) {
-            $url .= $params['format'] . '/TRUE/';
+        } elseif (isset($this->params['format'])) {
+            $url .= $this->params['format'] . '/TRUE/';
         }
 
         // Build the url to request
-        $url = $this->endpoint . $piction_method . '/surl/' . $this->surl . '(/' . $url . ')';
+        $url = $this->endpoint . $this->piction_method . '/surl/' . $this->surl . '(/' . $url . ')';
 
         return $url;
     }
 
+    /* Convert values to Piction values */
     private function _prepareValue($value)
     {
-        /*
-        Convert values to Piction values
-        */
         if ($value != "") {
             // Replace spaces with %20 to send params correctly
             $value = str_replace(' ', '%20', $value);
@@ -121,23 +125,8 @@ class Piction
         return $value;
     }
 
-    private function _request($piction_method, $params)
-    {
-        /*
-        Make a request to Piction and return response in the format requested.
-        */
-
-        // We don't send parameters as ?key=value because Piction uses a specific URL structure for it.
-        // The following method will created that url
-        $url = $this->_buildURL($piction_method, $params);
-
-        // Call Piction
-        $response = $this->_curlCall($url, $piction_method, $params);
-
-        return $response;
-    }
-
-    private function _curlCall($url, $piction_method, $params)
+    /* Calls through curl to Piction */
+    private function _curlCall($url)
     {
         //print($url);
         // Get cURL resource
@@ -160,30 +149,35 @@ class Piction
         curl_close($curl);
 
         // Check the response to see if a surl validation is thrown
-        $response = $this->_checkResponse($response, $piction_method, $params);
+        $response = $this->_checkResponse($response);
 
         return $response;
     }
 
-    private function _checkResponse($response, $piction_method, $params)
+    /* Check response to look for errors */
+    private function _checkResponse($response)
     {
         // If surl validation fails, get a new surl and run the request again
         if (strlen(strstr($response,'SURL failed validation')) > 0){
             $this->surl = $this->authenticate();
-            $response = $this->_request($piction_method, $params);
+            $response = $this->_request($this->piction_method, $this->params);
         }
 
         return $response;
     }
 
+    /* Call a piction method and return response in the format requested. */
     public function call($piction_method, $params)
     {
-        /*
-        Call a piction method and return response in the format requested.
-        This method injects the authentication token in all calls.
-        */
+        $this->piction_method = $piction_method;
+        $this->params = $params;
 
-        $response = $this->_request($piction_method, $params);
+        // We don't send parameters as ?key=value because Piction uses a specific URL structure for it.
+        // The following method will create the url
+        $url = $this->_buildURL();
+
+        // Call Piction
+        $response = $this->_curlCall($url);
 
         return $response;
     }
