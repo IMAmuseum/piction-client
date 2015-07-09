@@ -4,6 +4,12 @@ namespace Imamuseum\PictionClient;
 
 use Exception;
 
+class PictionPaginatedResponse
+{
+    private $object;
+
+}
+
 class Piction
 {
     /*
@@ -47,8 +53,8 @@ class Piction
             '/PASSWORD/' . $this->password .
             '/' . $this->format . '/TRUE';
 
-        $response = $this->_curlCall($url);
-
+        $response = $this->_curlCall($url, $piction_method="", $params=[]);
+        $response = $this->_to_json($response);
         $this->saveToken($response);
 
         return $response->SURL;
@@ -75,7 +81,7 @@ class Piction
         file_put_contents($file, $newFileContent);
     }
 
-    private function _build_url($piction_method, $params)
+    private function _buildURL($piction_method, $params)
     {
         // Convert parameters to Piction URL structure
         // http://piction.host.com/r/st/[method]/surl/[auth_token](/[param_name]/[param_value]/..)
@@ -83,11 +89,13 @@ class Piction
 
         // Format a pair key-value list
         foreach ($params as $key => $value) {
-            $url .= strtoupper($key) . '/' . $this->_prepare_value($value) . '/';
+            $url .= strtoupper($key) . '/' . $this->_prepareValue($value) . '/';
         }
 
-        if (isset($this->format) && !is_null($this->format)){
+        if (isset($this->format) && !is_null($this->format) && !isset($params['format'])) {
             $url .= $this->format . '/TRUE/';
+        } elseif (isset($params['format'])) {
+            $url .= $params['format'] . '/TRUE/';
         }
 
         $url = $this->endpoint . $piction_method . '/surl/' . $this->surl . '(/' . $url . ')';
@@ -95,7 +103,7 @@ class Piction
         return $url;
     }
 
-    private function _prepare_value($value)
+    private function _prepareValue($value)
     {
         /*
         Convert values to Piction values
@@ -123,15 +131,15 @@ class Piction
 
         // We don't send parameters as ?key=value because Piction uses a specific URL structure for it.
         // The following method will created that url
-        $url = $this->_build_url($piction_method, $params);
+        $url = $this->_buildURL($piction_method, $params);
 
-        # Call Piction
-        $response = $this->_curlCall($url);
+        // Call Piction
+        $response = $this->_curlCall($url, $piction_method, $params);
 
         return $response;
     }
 
-    private function _curlCall($url)
+    private function _curlCall($url, $piction_method, $params)
     {
         //print($url);
         // Get cURL resource
@@ -148,40 +156,25 @@ class Piction
         } else {
             $ch = str_replace(",\n}\n}\n}", "}", curl_exec($curl));
             // Send the request & save response to $response
-            $response = json_decode($ch);
+            $response = $ch;
         }
 
         // Close request to clear up some resources
         curl_close($curl);
 
+        $response = $this->_checkResponse($response, $piction_method, $params);
+
         return $response;
     }
 
-    # FORMAT RESPONSES
-    private function _to_raw($response)
+    private function _checkResponse($response, $piction_method, $params)
     {
-        return string($response);
-    }
+        if (strlen(strstr($response,'SURL failed validation')) > 0){
+            $this->surl = $this->authenticate();
+            $response = $this->_request($piction_method, $params);
+        }
 
-    private function _to_json($response)
-    {
-        try {
-            return json_decode($response);
-        }
-        catch (Exception $e) {
-            echo 'Caught exception: ', $e->getMessage(), '\n';
-        }
-    }
-
-    private function _to_xml($response)
-    {
-        try {
-            $xml = new SimpleXMLElement(string($response));
-        }
-        catch (Exception $e) {
-            echo 'Caught exception: ', $e->getMessage(), '\n';
-        }
-        return $xml->asXML();
+        return $response;
     }
 
     public function call($piction_method, $params, $follow_pagination=False)
@@ -197,21 +190,21 @@ class Piction
         // Guessing if the response is a Piction paginated response. If the following conditions
         // happen the response contains a 't' attribute ( total ) and a 'r' attribute ( results )
         // If response is paginated and follow_pagination is True. Wrap response with PictionPaginatedResponse
-        if ($follow_pagination == True) {
-            $header = $response['s'];
-            $data   = $response['r'];
-            $total  = int($header['t']);
-            $start  = $params['START'];
-            // Check if maxrows exists if not use 100 objects as default
-            //$params = {k.upper(): v for k, v in params.items()};
-            $page_size = $params['MAXROWS'] = int($params['MAXROWS']);
-            // if(isset($data) && isset($total)){
-            //     $result = PictionPaginatedResponse($data, $total, $start, $this->_next_page($piction_method, $params), $page_size);
-            //     $response['r'] = $result;
-            // }
-        }
+        // if ($follow_pagination == True) {
+        //     $header = $response['s'];
+        //     $data   = $response['r'];
+        //     $total  = int($header['t']);
+        //     $start  = $params['START'];
+        //     // Check if maxrows exists if not use 100 objects as default
+        //     //$params = {k.upper(): v for k, v in params.items()};
+        //     $page_size = $params['MAXROWS'] = int($params['MAXROWS']);
+        //     // if(isset($data) && isset($total)){
+        //     //     $result = PictionPaginatedResponse($data, $total, $start, $this->_next_page($piction_method, $params), $page_size);
+        //     //     $response['r'] = $result;
+        //     // }
+        // }
 
-        return json_encode($response);
+        return $response;
     }
 
     # Piction service methods
@@ -224,7 +217,7 @@ class Piction
 
         $piction_method = 'metadata';
 
-        # This Piction webservice requires a specific order or attributes
+        // This Piction webservice requires a specific order or attributes
         $params = [];
 
         if (!is_null($umo_id)) {
@@ -255,16 +248,23 @@ class Piction
         //     }
         // }
 
-        return $this->call($piction_method, $params);
+        $params['format'] = 'XML';
+
+        $response = $this->call($piction_method, $params);
+
+        return $response;
     }
 
-    /*
+    /*************************
         Helper Functions
-    */
+    *************************/
 
     // Test for boolean variable where is_bool() returns false positive;
-    private function _is_bool($var) {
-        if (!is_string($var)) return (bool) $var;
+    private function _is_bool($var)
+    {
+        if (!is_string($var))
+            return (bool) $var;
+
         switch (strtolower($var)) {
             case '1':
             case 'true':
@@ -275,5 +275,35 @@ class Piction
         default:
             return false;
         }
+    }
+
+    // FORMAT RESPONSES
+    // raw
+    private function _to_raw($response)
+    {
+        return string($response);
+    }
+
+    // json
+    private function _to_json($response)
+    {
+        try {
+            return json_decode($response);
+        }
+        catch (Exception $e) {
+            echo 'Caught exception: ', $e->getMessage(), '\n';
+        }
+    }
+
+    // xml
+    private function _to_xml($response)
+    {
+        try {
+            $xml = simplexml_load_string($response);
+        }
+        catch (Exception $e) {
+            echo 'Caught exception: ', $e->getMessage(), '\n';
+        }
+        return $xml->asXML();
     }
 }
