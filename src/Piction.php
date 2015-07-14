@@ -33,6 +33,7 @@ class Piction
         $this->password = getenv('PICTION_PASSWORD');
         $this->format   = getenv('PICTION_FORMAT');
         $this->surl     = getenv('PICTION_SURL');
+
         $this->piction_method = "";
         $this->params   = [];
 
@@ -77,6 +78,22 @@ class Piction
         $newSurl = $searchTerm .'=' . $response->SURL;
         $newFileContent = str_replace($oldSurl, $newSurl, $fileContent);
         file_put_contents($file, $newFileContent);
+    }
+
+    /* Call a piction method and return response in the format requested. */
+    public function call($piction_method, $params)
+    {
+        $this->piction_method = $piction_method;
+        $this->params = $params;
+
+        // We don't send parameters as ?key=value because Piction uses a specific URL structure for it.
+        // The following method will create the url
+        $url = $this->_buildURL();
+
+        // Call Piction
+        $response = $this->_curlCall($url);
+
+        return $response;
     }
 
     /*
@@ -128,7 +145,7 @@ class Piction
     /* Calls through curl to Piction */
     private function _curlCall($url)
     {
-        //print($url);
+        // print($url);
         // Get cURL resource
         $curl = curl_init();
         // Set some options - we are passing in a useragent too here
@@ -166,27 +183,11 @@ class Piction
         return $response;
     }
 
-    /* Call a piction method and return response in the format requested. */
-    public function call($piction_method, $params)
-    {
-        $this->piction_method = $piction_method;
-        $this->params = $params;
-
-        // We don't send parameters as ?key=value because Piction uses a specific URL structure for it.
-        // The following method will create the url
-        $url = $this->_buildURL();
-
-        // Call Piction
-        $response = $this->_curlCall($url);
-
-        return $response;
-    }
-
     /*************************
         Helper Functions
     *************************/
 
-    // Test for boolean variable where is_bool() returns false positive;
+    /* Test for boolean variable where is_bool() returns false positive */
     private function _is_bool($var)
     {
         if (!is_string($var))
