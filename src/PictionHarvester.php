@@ -15,20 +15,17 @@ class PictionHarvester
 
         $this->image_url = getenv('PICTION_IMAGE_URL');
 
+        // Query config items
         $this->age = 30;
-        $this->maxrows = 1000;
+        $this->maxrows = 30;
         $this->metatags = 'IMA.PUBLICLY AVAILABLE,IMA.IRN';
-        $this->start = 0;
-
-        $this->id_field = 'IMA.IRN';
-
+        $this->collection_id_field = 'IMA.IRN';
         $this->collection_id = 'AID:7912565';
 
-        $this->ID = "IRN";
-
-        $this->IMAGE_TO_PULL = "Original Asset";
-
-        $this->FIELD_MAP = array(
+        // Transform Config items
+        $this->id_field = "IRN";
+        $this->img_to_pull = "Original Asset";
+        $this->field_map = array(
             "IRN" => "id",
             "TITACCESSIONNO" => "accession_num",
             "TITACCESSIONDATE" => "accession_date",
@@ -60,27 +57,18 @@ class PictionHarvester
 
     }
 
-    public function getAllObjects()
+    public function getAllObjects($start=0)
     {
         $piction_method = 'image_query';
 
-        if(isset($this->collection_id) && $this->collection_id != ""){
-            $params = array(
-                'SEARCH' => $this->collection_id . ' AND IMAGE_TYPE:PHOTO',
-                'FORCE_REFRESH' => True,
-                'METADATA' => True,
-                'MAXROWS' => $this->maxrows,
-                'ORDERBY' => $this->id_field
-            );
-        } else {
-            $params = array(
-                'SEARCH' => 'IMAGE_TYPE:PHOTO',
-                'FORCE_REFRESH' => True,
-                'METADATA' => True,
-                'MAXROWS' => $this->maxrows,
-                'ORDERBY' => $this->id_field
-            );
-        }
+        $params = array(
+            'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'IMAGE_TYPE:PHOTO',
+            'FORCE_REFRESH' => True,
+            'METADATA' => True,
+            'MAXROWS' => $this->maxrows,
+            'ORDERBY' => $this->collection_id_field,
+            'START' => $start
+        );
 
         // Make piction call
         $data = $this->piction->call($piction_method, $params);
@@ -94,23 +82,14 @@ class PictionHarvester
     public function getUpdatedObjects()
     {
         $piction_method = 'image_query';
-        if(isset($this->collection_id) && $this->collection_id != ""){
-            $params = array(
-                'SEARCH' => 'AGE:' . $this->age . ' AND ' . $this->collection_id . ' AND IMAGE_TYPE:PHOTO',
-                'FORCE_REFRESH' => True,
-                'METADATA' => True,
-                'MAXROWS' => $this->maxrows,
-                'ORDERBY' => $this->id_field
-            );
-        } else {
-            $params = array(
-                'SEARCH' => 'AGE:' . $this->age . ' AND IMAGE_TYPE:PHOTO',
-                'FORCE_REFRESH' => True,
-                'METADATA' => True,
-                'MAXROWS' => $this->maxrows,
-                'ORDERBY' => $this->id_field
-            );
-        }
+
+        $params = array(
+            'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? 'AGE:' . $this->age . ' AND ' . $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'AGE:' . $this->age . ' AND IMAGE_TYPE:PHOTO',
+            'FORCE_REFRESH' => True,
+            'METADATA' => True,
+            'MAXROWS' => $this->maxrows,
+            'ORDERBY' => $this->collection_id_field
+        );
 
         // Make piction call
         $data = $this->piction->call($piction_method, $params);
@@ -125,10 +104,10 @@ class PictionHarvester
     {
         $piction_method = 'image_query';
         $params = array(
-            'SEARCH' => 'META:"' . $this->id_field . ',' . $id . '"',
+            'SEARCH' => 'META:"' . $this->collection_id_field . ',' . $id . '"',
             'FORCE_REFRESH' => True,
             'METADATA' => True,
-            'MAXROWS' => $this->maxrows
+            'MAXROWS' => $this->maxrows,
         );
 
         // Make piction call
@@ -141,25 +120,17 @@ class PictionHarvester
     }
 
     // Get just the ids of all objects
-    public function getAllObjectIDs() {
+    public function getAllObjectIDs($start=0) {
         $piction_method = 'image_query';
-        if(isset($this->collection_id) && $this->collection_id != ""){
-            $params = array(
-                'SEARCH' => $this->collection_id . ' AND IMAGE_TYPE:PHOTO',
-                'FORCE_REFRESH' => True,
-                'METATAGS' => $this->id_field,
-                'ORDERBY' => $this->id_field,
-                'MAXROWS' => 1000
-            );
-        } else {
-            $params = array(
-                'SEARCH' => 'IMAGE_TYPE:PHOTO',
-                'FORCE_REFRESH' => True,
-                'METATAGS' => $this->id_field,
-                'ORDERBY' => $this->id_field,
-                'MAXROWS' => 1000
-            );
-        }
+
+        $params = array(
+            'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'IMAGE_TYPE:PHOTO',
+            'FORCE_REFRESH' => True,
+            'METATAGS' => $this->collection_id_field,
+            'ORDERBY' => $this->collection_id_field,
+            'MAXROWS' => $this->maxrows,
+            'START' => $start
+        );
 
         // Make piction call
         $data = $this->piction->call($piction_method, $params);
@@ -175,19 +146,11 @@ class PictionHarvester
         $piction_method = 'image_query';
         if(isset($this->collection_id) && $this->collection_id != ""){
             $params = array(
-                'SEARCH' => 'AGE:' . $this->age . ' AND ' . $this->collection_id . ' AND IMAGE_TYPE:PHOTO',
+                'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? 'AGE:' . $this->age . ' AND ' . $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'AGE:' . $this->age . ' AND IMAGE_TYPE:PHOTO',
                 'FORCE_REFRESH' => True,
-                'METATAGS' => $this->id_field,
-                'ORDERBY' => $this->id_field,
-                'MAXROWS' => 10000
-            );
-        } else {
-            $params = array(
-                'SEARCH' => 'AGE:' . $this->age . ' AND IMAGE_TYPE:PHOTO',
-                'FORCE_REFRESH' => True,
-                'METATAGS' => $this->id_field,
-                'ORDERBY' => $this->id_field,
-                'MAXROWS' => 10000
+                'METATAGS' => $this->collection_id_field,
+                'ORDERBY' => $this->collection_id_field,
+                'MAXROWS' => $this->maxrows
             );
         }
 
@@ -221,14 +184,14 @@ class PictionHarvester
                 foreach($result['m'] as $metadata) {
 
                     // check if the metadata element is in our field mapping
-                    if(array_key_exists($this->ID, $this->FIELD_MAP)) {
+                    if(array_key_exists($this->id_field, $this->field_map)) {
 
                         // Since piction stores the name of the field as a value and the value as another value
                         // we have to loop through the metadata to store the id
                         foreach($metadata as $k => $v) {
 
                             // If the current value matches the id field name
-                            if ($v == $this->ID){
+                            if ($v == $this->id_field){
 
                                 // Store the value in a variable and only once in the found_ids array
                                 $current_id = $metadata['v'];
@@ -249,11 +212,11 @@ class PictionHarvester
                     foreach($result['m'] as $metadata) {
 
                         // check if the metadata element is in our field mapping
-                        if(array_key_exists($metadata['c'], $this->FIELD_MAP)) {
+                        if(array_key_exists($metadata['c'], $this->field_map)) {
 
                             // Store metadata item if doesn't currently exist or if the current value is blank
-                            if (!isset($newData['results'][$current_id][$this->FIELD_MAP[$metadata['c']]]) || $newData['results'][$current_id][$this->FIELD_MAP[$metadata['c']]] == "") {
-                                $newData['results'][$current_id][$this->FIELD_MAP[$metadata['c']]] = htmlspecialchars($metadata['v']);
+                            if (!isset($newData['results'][$current_id][$this->field_map[$metadata['c']]]) || $newData['results'][$current_id][$this->field_map[$metadata['c']]] == "") {
+                                $newData['results'][$current_id][$this->field_map[$metadata['c']]] = htmlspecialchars($metadata['v']);
                             }
                         }
                     }
@@ -270,7 +233,7 @@ class PictionHarvester
                         foreach($result['o'] as $image) {
 
                             // Check if the current image is the one we want
-                            if ($image['pn'] == $this->IMAGE_TO_PULL){
+                            if ($image['pn'] == $this->img_to_pull){
 
                                 // Create array of image data
                                 $img_json = array(
@@ -310,14 +273,14 @@ class PictionHarvester
                 foreach($result['m'] as $metadata) {
 
                     // check if the metadata element is in our field mapping
-                    if(array_key_exists($this->ID, $this->FIELD_MAP)) {
+                    if(array_key_exists($this->id_field, $this->field_map)) {
 
                         // Since piction stores the name of the field as a value and the value as another value
                         // we have to loop through the metadata to store the id
                         foreach($metadata as $k => $v) {
 
                             // If the current value matches the id field name
-                            if ($v == $this->ID){
+                            if ($v == $this->id_field){
 
                                 // Store the value in a variable and only once in the found_ids array
                                 $current_id = $metadata['v'];
