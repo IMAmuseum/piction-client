@@ -15,46 +15,19 @@ class PictionHarvester
 
         $this->image_url = getenv('PICTION_IMAGE_URL');
 
+        $this->config = require 'config/piction.php';
+
         // Query config items
-        $this->age = 30;
-        $this->maxrows = 10000;
-        $this->metatags = 'IMA.PUBLICLY AVAILABLE,IMA.IRN';
-        $this->collection_id_field = 'IMA.IRN';
-        $this->collection_id = 'AID:7912565';
+        $this->age = $this->config['age'];
+        $this->maxrows = $this->config['maxrows'];
+        $this->metatags = $this->config['metatags'];
+        $this->collection_id_field = $this->config['collection_id_field'];
+        $this->collection_id = $this->config['collection_id'];
 
         // Transform Config items
-        $this->id_field = "IRN";
-        $this->img_to_pull = "Original Asset";
-        $this->field_map = array(
-            "IRN" => "id",
-            "TITACCESSIONNO" => "accession_num",
-            "TITACCESSIONDATE" => "accession_date",
-            "TITMAINTITLE" => "title",
-            "CREDATECREATED" => "date_created",
-            "CRECREATORREF_TAB" => "creator_ref",
-            "CRECREATORATTRIBUTION_TAB" => "attribution",
-            "CRECREATIONCULTUREORPEOPLE_TAB" => "culture_or_people",
-            "CRECREATIONNATIONALITY2_TAB" => "nationality",
-            "CRECREATIONPERIOD" => "period",
-            "CRECREATIONDYNASTY" => "dynasty",
-            "PHYMEDIUMANDSUPPORT" => "medium_and_support",
-            "PHYMEDIUM_TAB" => "medium",
-            "PHYSUPPORT_TAB" => "support",
-            "PHYCONVERTEDDIMS" => "converted_dims",
-            "SUMCREDITLINE" => "credit_line",
-            "RIGACKNOWLEDGEMENT" => "rights",
-            "PHYCOLLECTIONAREA" => "collection",
-            "CREPROVENANCE" => "provenance",
-            "REFIMAGETYPE_TAB" => "image_type",
-            "ADMPUBLISHWEBNOPASSWORD" => "publish_web",
-            "ONDISPLAY" => "on_display",
-            "AUTHORISER" => "authoriser",
-            "LOCCURRENTLOCATIONREF" => "current_location",
-            "PUBLICLY AVAILABLE" => "publically_available",
-            "DECADE" => "decade",
-            "YEAR" => "year"
-        );
-
+        $this->id_field = $this->config['id_field'];
+        $this->img_to_pull = $this->config['img_to_pull'];
+        $this->field_map = $this->config['field_map'];
     }
 
     public function getAllObjects($start=0)
