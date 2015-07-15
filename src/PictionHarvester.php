@@ -17,7 +17,7 @@ class PictionHarvester
 
         // Query config items
         $this->age = 30;
-        $this->maxrows = 30;
+        $this->maxrows = 10000;
         $this->metatags = 'IMA.PUBLICLY AVAILABLE,IMA.IRN';
         $this->collection_id_field = 'IMA.IRN';
         $this->collection_id = 'AID:7912565';
@@ -32,15 +32,15 @@ class PictionHarvester
             "TITMAINTITLE" => "title",
             "CREDATECREATED" => "date_created",
             "CRECREATORREF_TAB" => "creator_ref",
-            "CRECREATORATTRIBUTION_TAB" => "creator_attribution",
-            "CRECREATIONCULTUREORPEOPLE_TAB" => "creation_culture_or_people",
-            "CRECREATIONNATIONALITY2_TAB" => "creation_nationality",
-            "CRECREATIONPERIOD" => "creation_period",
-            "CRECREATIONDYNASTY" => "creation_dynasty",
-            "PHYMEDIUMANDSUPPORT" => "phy_medium_and_support",
-            "PHYMEDIUM_TAB" => "phy_medium",
-            "PHYSUPPORT_TAB" => "phy_support",
-            "PHYCONVERTEDDIMS" => "phy_converted_dims",
+            "CRECREATORATTRIBUTION_TAB" => "attribution",
+            "CRECREATIONCULTUREORPEOPLE_TAB" => "culture_or_people",
+            "CRECREATIONNATIONALITY2_TAB" => "nationality",
+            "CRECREATIONPERIOD" => "period",
+            "CRECREATIONDYNASTY" => "dynasty",
+            "PHYMEDIUMANDSUPPORT" => "medium_and_support",
+            "PHYMEDIUM_TAB" => "medium",
+            "PHYSUPPORT_TAB" => "support",
+            "PHYCONVERTEDDIMS" => "converted_dims",
             "SUMCREDITLINE" => "credit_line",
             "RIGACKNOWLEDGEMENT" => "rights",
             "PHYCOLLECTIONAREA" => "collection",
@@ -144,15 +144,14 @@ class PictionHarvester
     // Get just the ids of objects that have been updated
     public function getUpdatedObjectIDs() {
         $piction_method = 'image_query';
-        if(isset($this->collection_id) && $this->collection_id != ""){
-            $params = array(
-                'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? 'AGE:' . $this->age . ' AND ' . $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'AGE:' . $this->age . ' AND IMAGE_TYPE:PHOTO',
-                'FORCE_REFRESH' => True,
-                'METATAGS' => $this->collection_id_field,
-                'ORDERBY' => $this->collection_id_field,
-                'MAXROWS' => $this->maxrows
-            );
-        }
+
+        $params = array(
+            'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? 'AGE:' . $this->age . ' AND ' . $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'AGE:' . $this->age . ' AND IMAGE_TYPE:PHOTO',
+            'FORCE_REFRESH' => True,
+            'METATAGS' => $this->collection_id_field,
+            'ORDERBY' => $this->collection_id_field,
+            'MAXROWS' => $this->maxrows
+        );
 
         // Make piction call
         $data = $this->piction->call($piction_method, $params);
