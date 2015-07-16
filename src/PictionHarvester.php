@@ -34,6 +34,7 @@ class PictionHarvester
     {
         $piction_method = 'image_query';
 
+        // Set up query parameters to send to piction
         $params = array(
             'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'IMAGE_TYPE:PHOTO',
             'FORCE_REFRESH' => True,
@@ -56,6 +57,7 @@ class PictionHarvester
     {
         $piction_method = 'image_query';
 
+        // Set up query parameters to send to piction
         $params = array(
             'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? 'AGE:' . $this->age . ' AND ' . $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'AGE:' . $this->age . ' AND IMAGE_TYPE:PHOTO',
             'FORCE_REFRESH' => True,
@@ -76,6 +78,8 @@ class PictionHarvester
     public function getSpecificObject($id)
     {
         $piction_method = 'image_query';
+
+        // Set up query parameters to send to piction
         $params = array(
             'SEARCH' => 'META:"' . $this->collection_id_field . ',' . $id . '"',
             'FORCE_REFRESH' => True,
@@ -93,9 +97,11 @@ class PictionHarvester
     }
 
     // Get just the ids of all objects
-    public function getAllObjectIDs($start=0) {
+    public function getAllObjectIDs($start=0)
+    {
         $piction_method = 'image_query';
 
+        // Set up query parameters to send to piction
         $params = array(
             'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'IMAGE_TYPE:PHOTO',
             'FORCE_REFRESH' => True,
@@ -115,9 +121,11 @@ class PictionHarvester
     }
 
     // Get just the ids of objects that have been updated
-    public function getUpdatedObjectIDs() {
+    public function getUpdatedObjectIDs()
+    {
         $piction_method = 'image_query';
 
+        // Set up query parameters to send to piction
         $params = array(
             'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? 'AGE:' . $this->age . ' AND ' . $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'AGE:' . $this->age . ' AND IMAGE_TYPE:PHOTO',
             'FORCE_REFRESH' => True,
