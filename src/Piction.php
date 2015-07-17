@@ -25,8 +25,10 @@ class Piction
 
     public function __construct()
     {
-        $dotenv = new \Dotenv\Dotenv(__DIR__.'/..');
-        $dotenv->load();
+        if (class_exists('\\Dotenv\\Dotenv')){
+            $dotenv = new \Dotenv\Dotenv(__DIR__.'/..');
+            $dotenv->load();
+        }
 
         $this->endpoint = getenv('PICTION_ENDPOINT_URL');
         $this->username = getenv('PICTION_USERNAME');

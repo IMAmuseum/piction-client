@@ -10,8 +10,10 @@ class PictionHarvester
     {
         $this->piction = new \Imamuseum\PictionClient\Piction();
 
-        $dotenv = new \Dotenv\Dotenv(__DIR__.'/..');
-        $dotenv->load();
+        if (class_exists('\\Dotenv\\Dotenv')){
+            $dotenv = new \Dotenv\Dotenv(__DIR__.'/..');
+            $dotenv->load();
+        }
 
         $this->image_url = getenv('PICTION_IMAGE_URL');
 
