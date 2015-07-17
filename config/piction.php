@@ -12,7 +12,7 @@ return array(
     */
 
     'age' => 30,
-    'maxrows' => 10000,
+    'maxrows' => 1000,
     'metatags' => 'IMA.PUBLICLY AVAILABLE,IMA.IRN',
     'collection_id_field' => 'IMA.IRN',
     'collection_id' => 'AID:7912565',
