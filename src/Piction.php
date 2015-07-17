@@ -64,7 +64,7 @@ class Piction
     public function saveToken($response)
     {
         // get current .env and its contents
-        $file = '.env';
+        (file_exists('../.env')) ? $file = '../.env' : $file = '.env';
         $fileContent = file_get_contents($file);
 
         // set term to search and use regular expression to match the whole line
