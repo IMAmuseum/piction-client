@@ -4,7 +4,7 @@ namespace Imamuseum\PictionClient;
 
 use Exception;
 
-class PictionHarvester
+class PictionTransformer
 {
     public function __construct()
     {
