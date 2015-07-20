@@ -99,7 +99,7 @@ class PictionTransformer
     }
 
     // Get just the ids of all objects
-    public function getAllObjectIDs($start=0)
+    public function getAllObjectIDs($start = 0, $maxrows = 100)
     {
         $piction_method = 'image_query';
 
@@ -109,7 +109,7 @@ class PictionTransformer
             'FORCE_REFRESH' => True,
             'METATAGS' => $this->collection_id_field,
             'ORDERBY' => $this->collection_id_field,
-            'MAXROWS' => $this->maxrows,
+            'MAXROWS' => $maxrows,
             'START' => $start
         );
 
@@ -123,7 +123,7 @@ class PictionTransformer
     }
 
     // Get just the ids of objects that have been updated
-    public function getUpdatedObjectIDs()
+    public function getUpdatedObjectIDs($start = 0, $maxrows = 100)
     {
         $piction_method = 'image_query';
 
@@ -133,7 +133,8 @@ class PictionTransformer
             'FORCE_REFRESH' => True,
             'METATAGS' => $this->collection_id_field,
             'ORDERBY' => $this->collection_id_field,
-            'MAXROWS' => $this->maxrows
+            'MAXROWS' => $maxrows,
+            'START' => $start
         );
 
         // Make piction call
