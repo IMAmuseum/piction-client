@@ -281,6 +281,7 @@ class PictionTransformer
             }
         }
 
+        sort($newData['results'], SORT_NUMERIC);
         $newData['total'] = count($found_ids);
         $newData['image_count'] = $data['s']['t'];
 
