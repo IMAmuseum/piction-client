@@ -153,7 +153,6 @@ class PictionTransformer
 
         // Create new array to store the transformed data
         $newData = array();
-        $newData['total'] = $data['s']['t'];
 
         // Some book keeping variables and arrays
         $found_file = array();
@@ -232,6 +231,9 @@ class PictionTransformer
             }
         }
 
+        $newData['total'] = count($found_ids);
+        $newData['image_count'] = $data['s']['t'];
+
         return json_encode($newData);
     }
 
@@ -243,7 +245,6 @@ class PictionTransformer
 
         // Create new array to store the transformed data
         $newData = array();
-        $newData['total'] = $data['s']['t'];
 
         // Some book keeping variables and arrays
         $found_ids = array();
@@ -279,6 +280,9 @@ class PictionTransformer
                 }
             }
         }
+
+        $newData['total'] = count($found_ids);
+        $newData['image_count'] = $data['s']['t'];
 
         return json_encode($newData);
     }
