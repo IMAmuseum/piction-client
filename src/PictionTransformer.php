@@ -285,6 +285,6 @@ class PictionTransformer
         $newData['total'] = count($found_ids);
         $newData['image_count'] = $data['s']['t'];
 
-        return json_encode($newData);
+        return json_encode($data);
     }
 }
