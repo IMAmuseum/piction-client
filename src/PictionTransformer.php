@@ -94,7 +94,7 @@ class PictionTransformer
         $data = $this->piction->call($piction_method, $params);
 
         // Transform data into something more manageable
-        $data = $this->transformData($data);
+        $data = $this->transformData($data, true);
 
         return $data;
     }
@@ -147,7 +147,7 @@ class PictionTransformer
         return $data;
     }
 
-    public function transformData($data)
+    public function transformData($data, $specific = false)
     {
         // Get data from Piction
         $data = json_decode($data, true);
@@ -197,9 +197,15 @@ class PictionTransformer
                         // check if the metadata element is in our field mapping
                         if(array_key_exists($metadata['c'], $this->field_map)) {
 
-                            // Store metadata item if doesn't currently exist or if the current value is blank
-                            if (!isset($newData['results'][$current_id][$this->field_map[$metadata['c']]]) || $newData['results'][$current_id][$this->field_map[$metadata['c']]] == "") {
-                                $newData['results'][$current_id][$this->field_map[$metadata['c']]] = htmlspecialchars($metadata['v']);
+                            if (! $specific ) {
+                                // Store metadata item if doesn't currently exist or if the current value is blank
+                                if (!isset($newData['results'][$current_id][$this->field_map[$metadata['c']]]) || $newData['results'][$current_id][$this->field_map[$metadata['c']]] == "") {
+                                    $newData['results'][$current_id][$this->field_map[$metadata['c']]] = htmlspecialchars($metadata['v']);
+                                }
+                            } else {
+                                if (!isset($newData[$this->field_map[$metadata['c']]]) || $newData[$this->field_map[$metadata['c']]] == "") {
+                                    $newData[$this->field_map[$metadata['c']]] = htmlspecialchars($metadata['v']);
+                                }
                             }
                         }
                     }
@@ -223,8 +229,12 @@ class PictionTransformer
                                     'source_url' => $this->image_url . $image['u']
                                 );
 
-                                // Store image data in final json
-                                $newData['results'][$current_id]['images'][] = $img_json;
+                                if (! $specific ) {
+                                    // Store image data in final json
+                                    $newData['results'][$current_id]['images'][] = $img_json;
+                                } else {
+                                    $newData['images'][] = $img_json;
+                                }
                             }
                         }
                     }
@@ -232,8 +242,10 @@ class PictionTransformer
             }
         }
 
-        $newData['total'] = count($found_ids);
-        $newData['image_count'] = $data['s']['t'];
+        if (! $specific ) {
+            $newData['total'] = count($found_ids);
+            $newData['image_count'] = $data['s']['t'];
+        }
 
         return json_encode($newData);
     }
