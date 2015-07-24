@@ -196,7 +196,8 @@ class PictionTransformer
 
                         // check if the metadata element is in our field mapping
                         if(array_key_exists($metadata['c'], $this->field_map)) {
-
+                            
+                            // check if specific object has been requested
                             if (! $specific ) {
                                 // Store metadata item if doesn't currently exist or if the current value is blank
                                 if (!isset($newData['results'][$current_id][$this->field_map[$metadata['c']]]) || $newData['results'][$current_id][$this->field_map[$metadata['c']]] == "") {
@@ -229,6 +230,7 @@ class PictionTransformer
                                     'source_url' => $this->image_url . $image['u']
                                 );
 
+                                // check if specific object has been requested
                                 if (! $specific ) {
                                     // Store image data in final json
                                     $newData['results'][$current_id]['images'][] = $img_json;
@@ -242,6 +244,7 @@ class PictionTransformer
             }
         }
 
+        // check if specific object has been requested
         if (! $specific ) {
             $newData['total'] = count($found_ids);
             $newData['image_count'] = $data['s']['t'];
