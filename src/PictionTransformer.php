@@ -3,12 +3,13 @@
 namespace Imamuseum\PictionClient;
 
 use Exception;
+use Imamuseum\PictionClient\Piction;
 
 class PictionTransformer
 {
     public function __construct()
     {
-        $this->piction = new \Imamuseum\PictionClient\Piction();
+        $this->piction = new Piction();
 
         if (class_exists('\\Dotenv\\Dotenv')){
             $dotenv = new \Dotenv\Dotenv(__DIR__.'/..');
@@ -17,7 +18,7 @@ class PictionTransformer
 
         $this->image_url = getenv('PICTION_IMAGE_URL');
 
-        $this->config = require 'config/piction.php';
+        $this->config = require base_path().'/config/piction.php';
 
         // Query config items
         $this->age = $this->config['age'];

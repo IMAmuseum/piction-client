@@ -3,6 +3,8 @@
 namespace Imamuseum\PictionClient;
 
 use Exception;
+use Imamuseum\PictionClient\PictionHelpers;
+
 
 class Piction
 {
@@ -22,9 +24,16 @@ class Piction
     a structure URL it use normal GET parameters. e.g.
     http://piction.host.com/r/!soap.jsonget?n=[method]&surl=[auth_token](&[param_name]=[param_value]/..)
     */
+   
+    /**
+     * @var helpers
+     */
+    private $helpers;
 
     public function __construct()
     {
+        $this->helpers = new PictionHelpers();
+
         if (class_exists('\\Dotenv\\Dotenv')){
             $dotenv = new \Dotenv\Dotenv(__DIR__.'/..');
             $dotenv->load();
@@ -54,7 +63,7 @@ class Piction
             '/' . $this->format . '/TRUE';
 
         $response = $this->_curlCall($url);
-        $response = $this->_to_json($response);
+        $response = $this->helpers->to_json($response);
         $this->saveToken($response);
 
         return $response->SURL;
@@ -133,7 +142,7 @@ class Piction
         }
 
         // Check if the value is a boolean and set to correct type of string
-        if ($this->_is_bool($value)) {
+        if ($this->helpers->is_bool($value)) {
             if (($value != "") && ($value !== FALSE)) {
                 $value = 'TRUE';
             } else {
@@ -185,55 +194,4 @@ class Piction
         return $response;
     }
 
-    /*************************
-        Helper Functions
-    *************************/
-
-    /* Test for boolean variable where is_bool() returns false positive */
-    private function _is_bool($var)
-    {
-        if (!is_string($var))
-            return (bool) $var;
-
-        switch (strtolower($var)) {
-            case '1':
-            case 'true':
-            case 'on':
-            case 'yes':
-            case 'y':
-                return true;
-        default:
-            return false;
-        }
-    }
-
-    // FORMAT RESPONSES
-    // raw
-    private function _to_raw($response)
-    {
-        return string($response);
-    }
-
-    // json
-    private function _to_json($response)
-    {
-        try {
-            return json_decode($response);
-        }
-        catch (Exception $e) {
-            echo 'Caught exception: ', $e->getMessage(), '\n';
-        }
-    }
-
-    // xml
-    private function _to_xml($response)
-    {
-        try {
-            $xml = simplexml_load_string($response);
-        }
-        catch (Exception $e) {
-            echo 'Caught exception: ', $e->getMessage(), '\n';
-        }
-        return $xml->asXML();
-    }
 }
