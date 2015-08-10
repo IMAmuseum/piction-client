@@ -4,8 +4,6 @@ namespace Imamuseum\PictionClient;
 
 use Illuminate\Support\ServiceProvider;
 
-use Imamuseum\PictionClient\Piction;
-
 class PictionServiceProvider extends ServiceProvider
 {
 
