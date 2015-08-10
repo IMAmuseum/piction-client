@@ -32,7 +32,7 @@ class PictionServiceProvider extends ServiceProvider
     public function register()
     {
         $this->publishes([
-            __DIR__.'/config/piction-client.php' => config_path('piction.php'),
+            __DIR__.'/../config/piction.php' => config_path('piction.php'),
         ]);
     }
 }
