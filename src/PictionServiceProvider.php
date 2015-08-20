@@ -31,6 +31,10 @@ class PictionServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        if (config('piction.routes_enabled')) {
+            include __DIR__.'/Http/routes.php';
+        }
+
         $this->publishes([
             __DIR__.'/../config/piction.php' => config_path('piction.php'),
         ]);
