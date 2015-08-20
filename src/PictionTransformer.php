@@ -196,7 +196,7 @@ class PictionTransformer
 
                         // check if the metadata element is in our field mapping
                         if(array_key_exists($metadata['c'], $this->field_map)) {
-                            
+
                             // check if specific object has been requested
                             if (! $specific ) {
                                 // Store metadata item if doesn't currently exist or if the current value is blank

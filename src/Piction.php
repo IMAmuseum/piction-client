@@ -24,7 +24,7 @@ class Piction
     a structure URL it use normal GET parameters. e.g.
     http://piction.host.com/r/!soap.jsonget?n=[method]&surl=[auth_token](&[param_name]=[param_value]/..)
     */
-   
+
     /**
      * @var helpers
      */
@@ -188,7 +188,7 @@ class Piction
         // If surl validation fails, get a new surl and run the request again
         if (strlen(strstr($response,'SURL failed validation')) > 0){
             $this->surl = $this->authenticate();
-            $response = $this->_request($this->piction_method, $this->params);
+            $response = $this->call($this->piction_method, $this->params);
         }
 
         return $response;
