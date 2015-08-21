@@ -1,6 +1,18 @@
 <?php
 
-return array(
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Piction Routes Configurations
+    |--------------------------------------------------------------------------
+    |
+    | Set to true if you are using the Laravel PictionServiceProvider and
+    | want to expose http routes to piction-client endpoints.
+    |
+    */
+
+    'routes_enabled' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -75,4 +87,4 @@ return array(
         "YEAR" => "year"
     ]
 
-);
+];

@@ -18,7 +18,14 @@ class PictionTransformer
 
         $this->image_url = getenv('PICTION_IMAGE_URL');
 
-        $this->config = require base_path().'/config/piction.php';
+        // if Laravel config function
+        if (config('piction')) {
+            // use Laravel config/piction.php
+            $this->config = config('piction');
+        } else {
+            // use the package config
+            $this->config = require __DIR__ . '/../config/piction.php';
+        }
 
         // Query config items
         $this->age = $this->config['age'];
