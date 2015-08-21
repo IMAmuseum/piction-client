@@ -19,9 +19,11 @@ class PictionTransformer
         $this->image_url = getenv('PICTION_IMAGE_URL');
 
         // if Laravel config function
-        if (config('piction')) {
-            // use Laravel config/piction.php
-            $this->config = config('piction');
+        if (function_exists("config")) {
+            if (config('piction')) {
+                // use Laravel config/piction.php
+                $this->config = config('piction');
+            }
         } else {
             // use the package config
             $this->config = require __DIR__ . '/../config/piction.php';
