@@ -19,9 +19,11 @@ class PictionTransformer
         $this->image_url = getenv('PICTION_IMAGE_URL');
 
         // if Laravel config function
-        if (config('piction')) {
-            // use Laravel config/piction.php
-            $this->config = config('piction');
+        if (function_exists("config")) {
+            if (config('piction')) {
+                // use Laravel config/piction.php
+                $this->config = config('piction');
+            }
         } else {
             // use the package config
             $this->config = require __DIR__ . '/../config/piction.php';
@@ -308,6 +310,6 @@ class PictionTransformer
         $newData['total'] = count($found_ids);
         $newData['image_count'] = $data['s']['t'];
 
-        return json_encode($newData);
+        return json_encode($data);
     }
 }
