@@ -236,7 +236,8 @@ class PictionTransformer
 
                                 // Create array of image data
                                 $img_json = array(
-                                    'source_url' => $this->image_url . $image['u']
+                                    'source_url' => $this->image_url . $image['u'],
+                                    'source_id' => $result['id'],
                                 );
 
                                 // check if specific object has been requested
