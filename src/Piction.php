@@ -48,6 +48,17 @@ class Piction
         $this->piction_method = "";
         $this->params   = [];
 
+                // if Laravel config function
+        if (function_exists("config")) {
+            if (config('piction')) {
+                // use Laravel config/piction.php
+                $this->config = config('piction');
+            }
+        } else {
+            // use the package config
+            $this->config = require __DIR__ . '/../config/piction.php';
+        }
+
         // Check if surl is null and if so lets get a new one to store.
         if ($this->surl === "null" || $this->surl === "") {
             $this->surl = $this->authenticate();
@@ -60,7 +71,7 @@ class Piction
         $url = $this->endpoint .
             'piction_login/USERNAME/' . $this->username .
             '/PASSWORD/' . $this->password .
-            '/' . $this->format . '/TRUE';
+            '/' . $this->format . '/' . $this->config['url_format'] . '/';
 
         $response = $this->_curlCall($url);
         $response = $this->helpers->to_json($response);
@@ -166,11 +177,10 @@ class Piction
             CURLOPT_URL => $url
         ));
 
-        if(curl_exec($curl) === false) {
-            echo 'Curl error: ' . curl_error($curl);
-        } else {
-            // Send the request & save response
-            $response = curl_exec($curl);
+        $response = curl_exec($curl);
+
+        if (curl_errno($curl) > 0) {
+            echo 'Curl error ' . curl_errno($curl) . ": " . curl_error($curl);
         }
 
         // Close request to clear up some resources

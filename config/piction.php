@@ -70,6 +70,10 @@ return [
         "PUBLICLY AVAILABLE" => "publically_available",
         "DECADE" => "decade",
         "YEAR" => "year"
-    ]
+    ],
+
+    // things changed for denver
+    'img_match' => "/\.(jpg|jpeg)/i",
+    'url_format' => "TRUE"
 
 ];

@@ -222,7 +222,7 @@ class PictionTransformer
 
                     // Match for images with v##.jpg at the end of the url
                     // These are the primary images to use on the site.
-                    $matches = preg_match('/\.(jpg|jpeg)/i', $result['n']);
+                    $matches = preg_match($this->config['img_match'], $result['n']);
                     if($matches) {
 
                         // If there was a match, add the match to the found files array
