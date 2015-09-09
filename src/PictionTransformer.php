@@ -42,7 +42,7 @@ class PictionTransformer
         $this->field_map = $this->config['field_map'];
     }
 
-    public function getAllObjects($start=0)
+    public function getAllObjects($start=0, $transform=true)
     {
         $piction_method = 'image_query';
 
@@ -60,7 +60,7 @@ class PictionTransformer
         $data = $this->piction->call($piction_method, $params);
 
         // Transform data into something more manageable
-        $data = $this->transformData($data);
+        if($transform === true) $data = $this->transformData($data);
 
         return $data;
     }
@@ -87,7 +87,7 @@ class PictionTransformer
         return $data;
     }
 
-    public function getSpecificObject($id)
+    public function getSpecificObject($id, $transform=true)
     {
         $piction_method = 'image_query';
 
@@ -103,7 +103,7 @@ class PictionTransformer
         $data = $this->piction->call($piction_method, $params);
 
         // Transform data into something more manageable
-        $data = $this->transformData($data, true);
+        if($transform === true) $data = $this->transformData($data, true);
 
         return $data;
     }
