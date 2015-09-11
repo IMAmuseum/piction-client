@@ -48,7 +48,7 @@ class Piction
         $this->piction_method = "";
         $this->params   = [];
 
-                // if Laravel config function
+        // if Laravel config function
         if (function_exists("config")) {
             if (config('piction')) {
                 // use Laravel config/piction.php
