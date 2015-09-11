@@ -16,6 +16,15 @@ class PictionTransformer
         // Get data from Piction
         $data = json_decode($data, true);
         $newData = $this->fieldMap();
+        foreach($data['r'] as $result) {
+            if($result['t'] == "PHOTO" && (count($result['o']) > 0)) {
+                foreach($result['m'] as $metadata) {
+                    if(array_key_exists($metadata['c'], $this->field_map)) {
+                        $newData[$this->field_map[$metadata['c']]][] = htmlspecialchars($metadata['v']);
+                    }
+                }
+            }
+        }
         return $newData;
     }
 
