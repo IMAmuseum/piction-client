@@ -25,6 +25,7 @@ class PictionTransformer
                 }
             }
         }
+        $newData = $this->checkNewData($newData);
         return $newData;
     }
 
@@ -189,6 +190,18 @@ class PictionTransformer
         //$newData['image_count'] = $data['s']['t'];
 
         return json_encode($newData);
+    }
+
+    public function checkNewData($data)
+    {
+        $result = [];
+        foreach ($data as $key => $value) {
+            $newValue = array_filter(array_unique($value));
+            if(count($newValue) == 1) $newValue = $newValue[0];
+            if(count($newValue) == 0) $newValue = null;
+            $result[$key] = $newValue;
+        }
+        return $result;
     }
 
     public function fieldMap()
