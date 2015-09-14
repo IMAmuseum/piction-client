@@ -56,7 +56,7 @@ class PictionController
         $data = $this->piction->call($piction_method, $params);
 
         // Transform data into something more manageable
-        $data = $this->transformer->ids($data);
+        $data = $this->transformer->getIds($data);
 
         return $data;
     }
@@ -80,7 +80,7 @@ class PictionController
         $data = $this->piction->call($piction_method, $params);
 
         // Transform data into something more manageable
-        $data = $this->transformer->ids($data);
+        $data = $this->transformer->getIds($data);
 
         return $data;
     }

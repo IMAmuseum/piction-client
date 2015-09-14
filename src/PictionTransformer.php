@@ -27,8 +27,10 @@ class PictionTransformer
         return $newData;
     }
 
+    // get all images for object
     public function getImages($data)
     {
+        // if matches the config img_match regex
         $matches = preg_match($this->img_match, $data['n']);
         if($matches) {
             foreach($data['o'] as $image) {
@@ -66,13 +68,16 @@ class PictionTransformer
         $results = null;
         $current_id = 0;
         foreach ($data['r'] as $object) {
+            // check if current id has changed if so clear images array and rebuild
             if($current_id == 0 || $current_id != $this->getCurrentId($object)) {
                 $images = [];
                 if($image = $this->getImages($object)) {
                     array_push($images, $image);
                 }
             }
+            // pass images to the results
             $results[] = $this->transform($object, $images);
+            // set the currrent id for image check
             $current_id = $this->getCurrentId($object);
         }
         return [
@@ -84,6 +89,22 @@ class PictionTransformer
         ];
     }
 
+    // return object ids
+    public function getIds($data)
+    {
+        $data = json_decode($data, true);
+        $newData['results'] = [];
+        // Loop through results items
+        foreach($data['r'] as $result) {
+            $newData['results'][] = $this->getCurrentId($result);
+        }
+        $newData['results'] = array_filter(array_unique($newData['results']));
+        sort($newData['results'], SORT_NUMERIC);
+        $newData['total'] = count($newData['results']);
+        return json_encode($newData);
+    }
+
+    // return the object id for current object
     public function getCurrentId($data)
     {
         if($data['t'] == "PHOTO" && (count($data['o']) > 0)) {
@@ -96,29 +117,6 @@ class PictionTransformer
                 }
             }
         }
-    }
-
-    // return object ids
-    public function getIds($data)
-    {
-        $data = json_decode($data, true);
-        $newData['results'] = [];
-        // Loop through results items
-        foreach($data['r'] as $result) {
-            if($result['t'] == "PHOTO" && (count($result['o']) > 0)) {
-                foreach($result['m'] as $metadata) {
-                    foreach($metadata as $k => $v) {
-                        if ($v == $this->id_field) {
-                            $newData['results'][] = $metadata['v'];
-                        }
-                    }
-                }
-            }
-        }
-        $newData['results'] = array_filter(array_unique($newData['results']));
-        sort($newData['results'], SORT_NUMERIC);
-        $newData['total'] = count($newData['results']);
-        return json_encode($newData);
     }
 
     // return image count from piction data
