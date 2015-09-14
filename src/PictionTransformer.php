@@ -58,7 +58,7 @@ class PictionTransformer
             }
             $result = $this->transform($object, $images);
         }
-        return $result;
+        return json_encode($result);
     }
 
     // transform a collection of objects
@@ -80,13 +80,13 @@ class PictionTransformer
             // set the currrent id for image check
             $current_id = $this->getCurrentId($object);
         }
-        return [
+        return json_encode([
             'results' => $results,
             'total' => count($results),
             'meta' => [
                 'image_count' => $this->getImageCount($data),
             ]
-        ];
+        ]);
     }
 
     // return object ids
