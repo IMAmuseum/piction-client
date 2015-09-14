@@ -85,50 +85,50 @@ class PictionController
         return $data;
     }
 
-    // public function getAllObjects($start=0, $transform=true)
-    // {
-    //     $piction_method = 'image_query';
+    public function getAllObjects($start=0, $transform=true)
+    {
+        $piction_method = 'image_query';
 
-    //     // Set up query parameters to send to piction
-    //     $params = array(
-    //         'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'IMAGE_TYPE:PHOTO',
-    //         'FORCE_REFRESH' => True,
-    //         'METADATA' => True,
-    //         'MAXROWS' => $this->maxrows,
-    //         'ORDERBY' => $this->collection_id_field,
-    //         'START' => $start
-    //     );
+        // Set up query parameters to send to piction
+        $params = array(
+            'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'IMAGE_TYPE:PHOTO',
+            'FORCE_REFRESH' => True,
+            'METADATA' => True,
+            'MAXROWS' => $this->maxrows,
+            'ORDERBY' => $this->collection_id_field,
+            'START' => $start
+        );
 
-    //     // Make piction call
-    //     $data = $this->piction->call($piction_method, $params);
+        // Make piction call
+        $data = $this->piction->call($piction_method, $params);
 
-    //     // Transform data into something more manageable
-    //     if($transform === true) $data = $this->transformer->transformData($data);
+        // Transform data into something more manageable
+        if($transform === true) $data = $this->transformer->collection($data);
 
-    //     return $data;
-    // }
+        return $data;
+    }
 
-    // public function getUpdatedObjects()
-    // {
-    //     $piction_method = 'image_query';
+    public function getUpdatedObjects()
+    {
+        $piction_method = 'image_query';
 
-    //     // Set up query parameters to send to piction
-    //     $params = array(
-    //         'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? 'AGE:' . $this->age . ' AND ' . $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'AGE:' . $this->age . ' AND IMAGE_TYPE:PHOTO',
-    //         'FORCE_REFRESH' => True,
-    //         'METADATA' => True,
-    //         'MAXROWS' => $this->maxrows,
-    //         'ORDERBY' => $this->collection_id_field
-    //     );
+        // Set up query parameters to send to piction
+        $params = array(
+            'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? 'AGE:' . $this->age . ' AND ' . $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'AGE:' . $this->age . ' AND IMAGE_TYPE:PHOTO',
+            'FORCE_REFRESH' => True,
+            'METADATA' => True,
+            'MAXROWS' => $this->maxrows,
+            'ORDERBY' => $this->collection_id_field
+        );
 
-    //     // Make piction call
-    //     $data = $this->piction->call($piction_method, $params);
+        // Make piction call
+        $data = $this->piction->call($piction_method, $params);
 
-    //     // Transform data into something more manageable
-    //     $data = $this->transformer->transformData($data);
+        // Transform data into something more manageable
+        $data = $this->transformer->collection($data);
 
-    //     return $data;
-    // }
+        return $data;
+    }
 
     public function getConfig()
     {
