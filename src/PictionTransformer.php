@@ -19,9 +19,10 @@ class PictionTransformer
             foreach($data['m'] as $metadata) {
                 if(array_key_exists($metadata['c'], $this->field_map)) {
                     $value = mb_convert_encoding(trim($metadata['v']), "UTF-8", "auto");
-                    //$value = array_map('utf8_encode', (array) $value);
+                    if (array_key_exists($metadata['c'], $this->field_transform)) {
+                        $value = $this->transformField($value, $metadata['c']);
+                    }
                     $newData[$this->field_map[$metadata['c']]][] = $value;
-                    //$newData[$this->field_map[$metadata['c']]] = array_map('utf8_encode', $newData[$this->field_map[$metadata['c']]][]);
                 }
             }
         }
@@ -137,8 +138,14 @@ class PictionTransformer
             if(count($value) == 0) $value = null;
             $result[$key] = $value;
         }
-
         return $result;
+    }
+
+    // transform field data
+    public function transformField($data, $field) {
+        $function = $this->field_transform[$field];
+
+        return $this->field_class->$function($data);
     }
 
     // build empty field map from config
@@ -172,5 +179,8 @@ class PictionTransformer
         $this->img_to_pull = $config['img_to_pull'];
         $this->field_map = $config['field_map'];
         $this->img_match = $config['img_match'];
+        $this->field_transform = $config['field_transform'];
+        //$this->field_class = $config['field_class'];
+        $this->field_class = new $config['field_class'];
     }
 }
