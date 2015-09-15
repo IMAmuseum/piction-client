@@ -18,7 +18,10 @@ class PictionTransformer
         if($data['t'] == "PHOTO" && (count($data['o']) > 0)) {
             foreach($data['m'] as $metadata) {
                 if(array_key_exists($metadata['c'], $this->field_map)) {
-                    $newData[$this->field_map[$metadata['c']]][] = htmlspecialchars($metadata['v']);
+                    $value = mb_convert_encoding(trim($metadata['v']), "UTF-8", "auto");
+                    //$value = array_map('utf8_encode', (array) $value);
+                    $newData[$this->field_map[$metadata['c']]][] = $value;
+                    //$newData[$this->field_map[$metadata['c']]] = array_map('utf8_encode', $newData[$this->field_map[$metadata['c']]][]);
                 }
             }
         }
@@ -129,11 +132,12 @@ class PictionTransformer
     {
         $result = [];
         foreach ($data as $key => $value) {
-            $newValue = array_filter(array_unique($value));
-            if(count($newValue) == 1) $newValue = $newValue[0];
-            if(count($newValue) == 0) $newValue = null;
-            $result[$key] = $newValue;
+            $value = array_filter(array_unique($value));
+            if(count($value) == 1) $value = $value[0];
+            if(count($value) == 0) $value = null;
+            $result[$key] = $value;
         }
+
         return $result;
     }
 
