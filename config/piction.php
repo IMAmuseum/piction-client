@@ -74,9 +74,9 @@ return [
         "YEAR" => "year"
     ],
 
-    'field_class' => 'App\Harvesters\DAMFieldTransformer',
+    'field_transform_class' => 'App\Harvesters\DAMFieldTransformer',
     'field_transform' => [
-        "ALLMAKER" => "artistTransformer",
+        "artist" => "artistTransformer",
     ]
 
 ];

@@ -19,14 +19,12 @@ class PictionTransformer
             foreach($data['m'] as $metadata) {
                 if(array_key_exists($metadata['c'], $this->field_map)) {
                     $value = mb_convert_encoding(trim($metadata['v']), "UTF-8", "auto");
-                    if (array_key_exists($metadata['c'], $this->field_transform)) {
-                        $value = $this->transformField($value, $metadata['c']);
-                    }
                     $newData[$this->field_map[$metadata['c']]][] = $value;
                 }
             }
         }
         $newData = $this->checkNewData($newData);
+        $newData = $this->transformFields($newData);
         $newData['images'] = $images;
         return $newData;
     }
@@ -135,17 +133,24 @@ class PictionTransformer
         foreach ($data as $key => $value) {
             $value = array_filter(array_unique($value));
             if(count($value) == 1) $value = $value[0];
-            if(count($value) == 0) $value = null;
+            if(count($value) == 0) $value = NULL;
             $result[$key] = $value;
         }
         return $result;
     }
 
     // transform field data
-    public function transformField($data, $field) {
-        $function = $this->field_transform[$field];
+    public function transformFields($data) {
+        $newData = [];
+        foreach ($data as $key => $value) {
+            if(array_key_exists($key, $this->field_transform)) {
+                $function = $this->field_transform[$key];
+                $value = $this->field_transform_class->$function($value);
 
-        return $this->field_class->$function($data);
+            }
+            $newData[$key] = $value;
+        }
+        return $newData;
     }
 
     // build empty field map from config
@@ -180,7 +185,6 @@ class PictionTransformer
         $this->field_map = $config['field_map'];
         $this->img_match = $config['img_match'];
         $this->field_transform = $config['field_transform'];
-        //$this->field_class = $config['field_class'];
-        $this->field_class = new $config['field_class'];
+        $this->field_transform_class = new $config['field_transform_class'];
     }
 }
