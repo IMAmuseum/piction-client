@@ -3,314 +3,188 @@
 namespace Imamuseum\PictionClient;
 
 use Exception;
-use Imamuseum\PictionClient\Piction;
 
 class PictionTransformer
 {
     public function __construct()
     {
-        $this->piction = new Piction();
+        $this->getConfig();
+    }
 
-        if (class_exists('\\Dotenv\\Dotenv')){
-            $dotenv = new \Dotenv\Dotenv(__DIR__.'/..');
-            $dotenv->load();
+    // transform the object data into our config field map
+    public function transform($data, $images)
+    {
+        $newData = $this->fieldMap();
+        if($data['t'] == "PHOTO" && (count($data['o']) > 0)) {
+            foreach($data['m'] as $metadata) {
+                if(array_key_exists($metadata['c'], $this->field_map)) {
+                    $value = mb_convert_encoding(trim($metadata['v']), "UTF-8", "auto");
+                    $newData[$this->field_map[$metadata['c']]][] = $value;
+                }
+            }
         }
+        $newData = $this->checkNewData($newData);
+        $newData = $this->transformFields($newData);
+        $newData['images'] = $images;
+        return $newData;
+    }
 
-        $this->image_url = getenv('PICTION_IMAGE_URL');
+    // get all images for object
+    public function getImages($data)
+    {
+        // if matches the config img_match regex
+        $matches = preg_match($this->img_match, $data['n']);
+        if($matches) {
+            foreach($data['o'] as $image) {
+                // Check if the current image is the one we want
+                if ($image['pn'] == $this->img_to_pull) {
+                    // Create array of image data
+                    $img = [
+                        'source_url' => $this->image_url . $image['u'],
+                        'source_id' => $data['id'],
+                    ];
+                }
+            }
+            return $img;
+        }
+    }
 
+    // transform an individual object
+    public function item($data)
+    {
+        $data = json_decode($data, true);
+        $images = [];
+        foreach ($data['r'] as $object) {
+            if($image = $this->getImages($object)) {
+                array_push($images, $image);
+            }
+            $result = $this->transform($object, $images);
+        }
+        return json_encode($result);
+    }
+
+    // transform a collection of objects
+    public function collection($data)
+    {
+        $data = json_decode($data, true);
+        $results = null;
+        $current_id = 0;
+        foreach ($data['r'] as $object) {
+            // check if current id has changed if so clear images array and rebuild
+            if($current_id == 0 || $current_id != $this->getCurrentId($object)) {
+                $images = [];
+                if($image = $this->getImages($object)) {
+                    array_push($images, $image);
+                }
+            }
+            // pass images to the results
+            $results[] = $this->transform($object, $images);
+            // set the currrent id for image check
+            $current_id = $this->getCurrentId($object);
+        }
+        return json_encode([
+            'results' => $results,
+            'total' => count($results),
+            'meta' => [
+                'image_count' => $this->getImageCount($data),
+            ]
+        ]);
+    }
+
+    // return object ids
+    public function getIds($data)
+    {
+        $data = json_decode($data, true);
+        $newData['results'] = [];
+        // Loop through results items
+        foreach($data['r'] as $result) {
+            $newData['results'][] = $this->getCurrentId($result);
+        }
+        $newData['results'] = array_filter(array_unique($newData['results']));
+        sort($newData['results'], SORT_NUMERIC);
+        $newData['total'] = count($newData['results']);
+        return json_encode($newData);
+    }
+
+    // return the object id for current object
+    public function getCurrentId($data)
+    {
+        if($data['t'] == "PHOTO" && (count($data['o']) > 0)) {
+            foreach($data['m'] as $metadata) {
+                foreach($metadata as $k => $v) {
+                    if ($v == $this->id_field) {
+                        $current_id = $metadata['v'];
+                        return $current_id;
+                    }
+                }
+            }
+        }
+    }
+
+    // return image count from piction data
+    public function getImageCount($data) {
+        return $data['s']['t'];
+    }
+
+    // clean up redundant data
+    public function checkNewData($data)
+    {
+        $result = [];
+        foreach ($data as $key => $value) {
+            $value = array_filter(array_unique($value));
+            if(count($value) == 1) $value = $value[0];
+            if(count($value) == 0) $value = NULL;
+            $result[$key] = $value;
+        }
+        return $result;
+    }
+
+    // transform field data
+    public function transformFields($data) {
+        $newData = [];
+        foreach ($data as $key => $value) {
+            if(array_key_exists($key, $this->field_transform)) {
+                $function = $this->field_transform[$key];
+                $value = $this->field_transform_class->$function($value);
+
+            }
+            $newData[$key] = $value;
+        }
+        return $newData;
+    }
+
+    // build empty field map from config
+    public function fieldMap()
+    {
+        $fields = [];
+        foreach ($this->field_map as $field) {
+            $fields[$field] = [];
+        }
+        return $fields;
+    }
+
+    // load config
+    public function getConfig()
+    {
         // if Laravel config function
         if (function_exists("config")) {
             if (config('piction')) {
                 // use Laravel config/piction.php
-                $this->config = config('piction');
+                $config = config('piction');
             }
         } else {
             // use the package config
-            $this->config = require __DIR__ . '/../config/piction.php';
+            $config = require __DIR__ . '/../config/piction.php';
         }
 
-        // Query config items
-        $this->age = $this->config['age'];
-        $this->maxrows = $this->config['maxrows'];
-        $this->metatags = $this->config['metatags'];
-        $this->collection_id_field = $this->config['collection_id_field'];
-        $this->collection_id = $this->config['collection_id'];
+        $this->image_url = getenv('PICTION_IMAGE_URL');
 
         // Transform Config items
-        $this->id_field = $this->config['id_field'];
-        $this->img_to_pull = $this->config['img_to_pull'];
-        $this->field_map = $this->config['field_map'];
-    }
-
-    public function getAllObjects($start=0, $transform=true)
-    {
-        $piction_method = 'image_query';
-
-        // Set up query parameters to send to piction
-        $params = array(
-            'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'IMAGE_TYPE:PHOTO',
-            'FORCE_REFRESH' => True,
-            'METADATA' => True,
-            'MAXROWS' => $this->maxrows,
-            'ORDERBY' => $this->collection_id_field,
-            'START' => $start
-        );
-
-        // Make piction call
-        $data = $this->piction->call($piction_method, $params);
-
-        // Transform data into something more manageable
-        if($transform === true) $data = $this->transformData($data);
-
-        return $data;
-    }
-
-    public function getUpdatedObjects()
-    {
-        $piction_method = 'image_query';
-
-        // Set up query parameters to send to piction
-        $params = array(
-            'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? 'AGE:' . $this->age . ' AND ' . $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'AGE:' . $this->age . ' AND IMAGE_TYPE:PHOTO',
-            'FORCE_REFRESH' => True,
-            'METADATA' => True,
-            'MAXROWS' => $this->maxrows,
-            'ORDERBY' => $this->collection_id_field
-        );
-
-        // Make piction call
-        $data = $this->piction->call($piction_method, $params);
-
-        // Transform data into something more manageable
-        $data = $this->transformData($data);
-
-        return $data;
-    }
-
-    public function getSpecificObject($id, $transform=true)
-    {
-        $piction_method = 'image_query';
-
-        // Set up query parameters to send to piction
-        $params = array(
-            'SEARCH' => 'META:"' . $this->collection_id_field . ',' . $id . '"',
-            'FORCE_REFRESH' => True,
-            'METADATA' => True,
-            'MAXROWS' => $this->maxrows,
-        );
-
-        // Make piction call
-        $data = $this->piction->call($piction_method, $params);
-
-        // Transform data into something more manageable
-        if($transform === true) $data = $this->transformData($data, true);
-
-        return $data;
-    }
-
-    // Get just the ids of all objects
-    public function getAllObjectIDs($start = 0, $maxrows = 100)
-    {
-        $piction_method = 'image_query';
-
-        // Set up query parameters to send to piction
-        $params = array(
-            'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'IMAGE_TYPE:PHOTO',
-            'FORCE_REFRESH' => True,
-            'METATAGS' => $this->collection_id_field,
-            'ORDERBY' => $this->collection_id_field,
-            'MAXROWS' => $maxrows,
-            'START' => $start
-        );
-
-        // Make piction call
-        $data = $this->piction->call($piction_method, $params);
-
-        // Transform data into something more manageable
-        $data = $this->transformIdData($data);
-
-        return $data;
-    }
-
-    // Get just the ids of objects that have been updated
-    public function getUpdatedObjectIDs($start = 0, $maxrows = 100)
-    {
-        $piction_method = 'image_query';
-
-        // Set up query parameters to send to piction
-        $params = array(
-            'SEARCH' => (isset($this->collection_id) && $this->collection_id != "") ? 'AGE:' . $this->age . ' AND ' . $this->collection_id . ' AND IMAGE_TYPE:PHOTO' : 'AGE:' . $this->age . ' AND IMAGE_TYPE:PHOTO',
-            'FORCE_REFRESH' => True,
-            'METATAGS' => $this->collection_id_field,
-            'ORDERBY' => $this->collection_id_field,
-            'MAXROWS' => $maxrows,
-            'START' => $start
-        );
-
-        // Make piction call
-        $data = $this->piction->call($piction_method, $params);
-
-        // Transform data into something more manageable
-        $data = $this->transformIdData($data);
-
-        return $data;
-    }
-
-    public function transformData($data, $specific = false)
-    {
-        // Get data from Piction
-        $data = json_decode($data, true);
-
-        // Create new array to store the transformed data
-        $newData = array();
-
-        // Some book keeping variables and arrays
-        $found_file = array();
-        $found_ids = array();
-        $current_id = 0;
-
-        // Loop through results items
-        foreach($data['r'] as $result) {
-
-            if($result['t'] == "PHOTO" && (count($result['o']) > 0) && !in_array($result['n'], $found_file)) {
-                foreach($result['m'] as $metadata) {
-
-                    // check if the metadata element is in our field mapping
-                    if(array_key_exists($this->id_field, $this->field_map)) {
-
-                        // Since piction stores the name of the field as a value and the value as another value
-                        // we have to loop through the metadata to store the id
-                        foreach($metadata as $k => $v) {
-
-                            // If the current value matches the id field name
-                            if ($v == $this->id_field){
-
-                                // Store the value in a variable and only once in the found_ids array
-                                $current_id = $metadata['v'];
-                                if($current_id != ""){
-                                    if(!in_array($current_id, $found_ids)){
-                                        $found_ids[$current_id] = $current_id;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Check if current id exists and store the data
-                if(in_array($current_id, $found_ids)){
-
-                    // Loop through metadata
-                    foreach($result['m'] as $metadata) {
-
-                        // check if the metadata element is in our field mapping
-                        if(array_key_exists($metadata['c'], $this->field_map)) {
-
-                            // check if specific object has been requested
-                            if (! $specific ) {
-                                // Store metadata item if doesn't currently exist or if the current value is blank
-                                if (!isset($newData['results'][$current_id][$this->field_map[$metadata['c']]]) || $newData['results'][$current_id][$this->field_map[$metadata['c']]] == "") {
-                                    $newData['results'][$current_id][$this->field_map[$metadata['c']]] = htmlspecialchars($metadata['v']);
-                                }
-                            } else {
-                                if (!isset($newData[$this->field_map[$metadata['c']]]) || $newData[$this->field_map[$metadata['c']]] == "") {
-                                    $newData[$this->field_map[$metadata['c']]] = htmlspecialchars($metadata['v']);
-                                }
-                            }
-                        }
-                    }
-
-                    // Match for images with v##.jpg at the end of the url
-                    // These are the primary images to use on the site.
-                    $matches = preg_match($this->config['img_match'], $result['n']);
-                    if($matches) {
-
-                        // If there was a match, add the match to the found files array
-                        array_push($found_file, $result['n']);
-
-                        // Loop through the images in current result
-                        foreach($result['o'] as $image) {
-
-                            // Check if the current image is the one we want
-                            if ($image['pn'] == $this->img_to_pull){
-
-                                // Create array of image data
-                                $img_json = array(
-                                    'source_url' => $this->image_url . $image['u'],
-                                    'source_id' => $result['id'],
-                                );
-
-                                // check if specific object has been requested
-                                if (! $specific ) {
-                                    // Store image data in final json
-                                    $newData['results'][$current_id]['images'][] = $img_json;
-                                } else {
-                                    $newData['images'][] = $img_json;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // check if specific object has been requested
-        if (! $specific ) {
-            $newData['total'] = count($found_ids);
-            $newData['image_count'] = $data['s']['t'];
-        }
-
-        return json_encode($newData);
-    }
-
-    // Transform data to only show ID in results
-    public function transformIdData($data)
-    {
-        // Get data from Piction
-        $data = json_decode($data, true);
-
-        // Create new array to store the transformed data
-        $newData = array();
-
-        // Some book keeping variables and arrays
-        $found_ids = array();
-        $current_id = 0;
-
-        // Loop through results items
-        foreach($data['r'] as $result) {
-
-            if($result['t'] == "PHOTO" && (count($result['o']) > 0)) {
-                foreach($result['m'] as $metadata) {
-
-                    // check if the metadata element is in our field mapping
-                    if(array_key_exists($this->id_field, $this->field_map)) {
-
-                        // Since piction stores the name of the field as a value and the value as another value
-                        // we have to loop through the metadata to store the id
-                        foreach($metadata as $k => $v) {
-
-                            // If the current value matches the id field name
-                            if ($v == $this->id_field){
-
-                                // Store the value in a variable and only once in the found_ids array
-                                $current_id = $metadata['v'];
-                                if($current_id != ""){
-                                    if(!in_array($current_id, $found_ids)){
-                                        $found_ids[] = $current_id;
-                                        $newData['results'][] = $metadata['v'];
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        sort($newData['results'], SORT_NUMERIC);
-        $newData['total'] = count($found_ids);
-        $newData['image_count'] = $data['s']['t'];
-
-        return json_encode($newData);
+        $this->id_field = $config['id_field'];
+        $this->img_to_pull = $config['img_to_pull'];
+        $this->field_map = $config['field_map'];
+        $this->img_match = $config['img_match'];
+        $this->field_transform = $config['field_transform'];
+        $this->field_transform_class = new $config['field_transform_class'];
     }
 }

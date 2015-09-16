@@ -28,6 +28,8 @@ return [
     'metatags' => 'IMA.PUBLICLY AVAILABLE,IMA.IRN',
     'collection_id_field' => 'IMA.IRN',
     'collection_id' => 'AID:7912565',
+    'img_match' => "/\.(jpg|jpeg)/i",
+    'url_format' => "TRUE"
 
     /*
     |--------------------------------------------------------------------------
@@ -72,8 +74,9 @@ return [
         "YEAR" => "year"
     ],
 
-    // things changed for denver
-    'img_match' => "/\.(jpg|jpeg)/i",
-    'url_format' => "TRUE"
+    'field_transform_class' => 'App\Harvesters\DAMFieldTransformer',
+    'field_transform' => [
+        "artist" => "artistTransformer",
+    ]
 
 ];

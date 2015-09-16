@@ -6,7 +6,7 @@
 |--------------------------------------------------------------------------
 */
 
-use Imamuseum\PictionClient\PictionTransformer as Piction;
+use Imamuseum\PictionClient\PictionController as Piction;
 
 Route::group(['prefix' => 'piction'], function() {
 
