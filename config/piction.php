@@ -28,7 +28,7 @@ return [
     'metatags' => 'IMA.PUBLICLY AVAILABLE,IMA.IRN',
     'collection_id_field' => 'IMA.IRN',
     'collection_id' => 'AID:7912565',
-    'img_match' => "/\.(jpg|jpeg)/i",
+    'img_match' => '/\.(jpg|jpeg)/i',
     'url_format' => "TRUE"
 
     /*
@@ -42,41 +42,42 @@ return [
     |
     */
 
-    'id_field' => "IRN",
-    'img_to_pull' => "Original Asset",
+    'id_field' => 'IRN',
+    'img_to_pull' => 'Original Asset',
     'field_map' => [
-        "IRN" => "id",
-        "TITACCESSIONNO" => "accession_num",
-        "TITACCESSIONDATE" => "accession_date",
-        "TITMAINTITLE" => "title",
-        "CREDATECREATED" => "date_created",
-        "CRECREATORREF_TAB" => "creator_ref",
-        "CRECREATORATTRIBUTION_TAB" => "attribution",
-        "CRECREATIONCULTUREORPEOPLE_TAB" => "culture_or_people",
-        "CRECREATIONNATIONALITY2_TAB" => "nationality",
-        "CRECREATIONPERIOD" => "period",
-        "CRECREATIONDYNASTY" => "dynasty",
-        "PHYMEDIUMANDSUPPORT" => "medium_and_support",
-        "PHYMEDIUM_TAB" => "medium",
-        "PHYSUPPORT_TAB" => "support",
-        "PHYCONVERTEDDIMS" => "converted_dims",
-        "SUMCREDITLINE" => "credit_line",
-        "RIGACKNOWLEDGEMENT" => "rights",
-        "PHYCOLLECTIONAREA" => "collection",
-        "CREPROVENANCE" => "provenance",
-        "REFIMAGETYPE_TAB" => "image_type",
-        "ADMPUBLISHWEBNOPASSWORD" => "publish_web",
-        "ONDISPLAY" => "on_display",
-        "AUTHORISER" => "authoriser",
-        "LOCCURRENTLOCATIONREF" => "current_location",
-        "PUBLICLY AVAILABLE" => "publically_available",
-        "DECADE" => "decade",
-        "YEAR" => "year"
+        'IRN' => 'id',
+        'TITACCESSIONNO' => 'accession_num',
+        'TITACCESSIONDATE' => 'accession_date',
+        'TITMAINTITLE' => 'title',
+        'CREDATECREATED' => 'date_created',
+        'CRECREATORREF_TAB' => 'creator_ref',
+        'CRECREATORATTRIBUTION_TAB' => 'attribution',
+        'CRECREATIONCULTUREORPEOPLE_TAB' => 'culture_or_people',
+        'CRECREATIONNATIONALITY2_TAB' => 'nationality',
+        'CRECREATIONPERIOD' => 'period',
+        'CRECREATIONDYNASTY' => 'dynasty',
+        'PHYMEDIUMANDSUPPORT' => 'medium_and_support',
+        'PHYMEDIUM_TAB' => 'medium',
+        'PHYSUPPORT_TAB' => 'support',
+        'PHYCONVERTEDDIMS' => 'converted_dims',
+        'SUMCREDITLINE' => 'credit_line',
+        'RIGACKNOWLEDGEMENT' => 'rights',
+        'PHYCOLLECTIONAREA' => 'collection',
+        'CREPROVENANCE' => 'provenance',
+        'REFIMAGETYPE_TAB' => 'image_type',
+        'ADMPUBLISHWEBNOPASSWORD' => 'publish_web',
+        'ONDISPLAY' => 'on_display',
+        'AUTHORISER' => 'authoriser',
+        'LOCCURRENTLOCATIONREF' => 'current_location',
+        'PUBLICLY AVAILABLE' => 'publically_available',
+        'DECADE' => 'decade',
+        'YEAR' => 'year'
     ],
 
     'field_transform_class' => 'App\Harvesters\DAMFieldTransformer',
+    // this area transforms data within a single field
     'field_transform' => [
-        "artist" => "artistTransformer",
+        'artist' => 'artistTransformer',
     ]
 
 ];
