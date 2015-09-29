@@ -38,8 +38,9 @@ class PictionController
     }
 
     // Get just the ids of all objects
-    public function getAllObjectIDs($start = 0, $maxrows = 100)
+    public function getAllObjectIDs($start = 0, $maxrows = null)
     {
+        $maxrows = $maxrows != null ? $maxrows : $this->maxrows;
         $piction_method = 'image_query';
 
         // Set up query parameters to send to piction
@@ -62,8 +63,9 @@ class PictionController
     }
 
     // Get just the ids of objects that have been updated
-    public function getUpdatedObjectIDs($start = 0, $maxrows = 100)
+    public function getUpdatedObjectIDs($start = 0, $maxrows = null)
     {
+        $maxrows = $maxrows != null ? $maxrows : $this->maxrows;
         $piction_method = 'image_query';
 
         // Set up query parameters to send to piction

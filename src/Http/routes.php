@@ -24,12 +24,10 @@ Route::group(['prefix' => 'piction'], function() {
     });
 
     Route::get('/getAllObjectIDs', function() {
+        $start = isset($_GET['start']) ? $_GET['start'] : 0;
+        $maxrows = isset($_GET['maxrows']) ? $_GET['maxrows'] : null;
         $piction = new Piction();
-        if(isset($_GET['start'])) {
-            return $piction->getAllObjectIDs($_GET['start']);
-        } else {
-            return $piction->getAllObjectIDs();
-        }
+        return $piction->getAllObjectIDs($start, $maxrows);
     });
 
     Route::get('/getUpdatedObjects', function() {
@@ -38,8 +36,10 @@ Route::group(['prefix' => 'piction'], function() {
     });
 
     Route::get('/getUpdatedObjectIDs', function() {
+        $start = isset($_GET['start']) ? $_GET['start'] : 0;
+        $maxrows = isset($_GET['maxrows']) ? $_GET['maxrows'] : null;
         $piction = new Piction();
-        return $piction->getUpdatedObjectIDs();
+        return $piction->getUpdatedObjectIDs($start, $maxrows);
     });
 
 });
