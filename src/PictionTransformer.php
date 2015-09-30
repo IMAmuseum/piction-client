@@ -41,7 +41,7 @@ class PictionTransformer
                     // Create array of image data
                     $img = [
                         'source_url' => $this->image_url . $image['u'],
-                        'source_id' => $data['id'],
+                        'source_id' => (int) $data['id'],
                     ];
                 }
             }
