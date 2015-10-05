@@ -25,6 +25,7 @@ class PictionTransformer
         }
         $newData = $this->checkNewData($newData);
         $newData = $this->transformFields($newData);
+        $newData = $this->addFields($newData);
         $newData['images'] = $images;
         return $newData;
     }
@@ -140,7 +141,8 @@ class PictionTransformer
     }
 
     // transform field data
-    public function transformFields($data) {
+    public function transformFields($data)
+    {
         $newData = [];
         foreach ($data as $key => $value) {
             if(array_key_exists($key, $this->field_transform)) {
@@ -149,6 +151,16 @@ class PictionTransformer
 
             }
             $newData[$key] = $value;
+        }
+        return $newData;
+    }
+
+    // add fields to data
+    public function addFields($data)
+    {
+        foreach($this->field_addition as $newField => $function) {
+            $newData = $this->field_transform_class->$function($data);
+            //$data[$key] = $newFieldValue;
         }
         return $newData;
     }
@@ -185,6 +197,7 @@ class PictionTransformer
         $this->field_map = $config['field_map'];
         $this->img_match = $config['img_match'];
         $this->field_transform = $config['field_transform'];
+        $this->field_addition = $config['field_addition'];
         $this->field_transform_class = new $config['field_transform_class'];
     }
 }

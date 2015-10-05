@@ -78,6 +78,10 @@ return [
     // this area transforms data within a single field
     'field_transform' => [
         'artist' => 'artistTransformer',
-    ]
+    ],
+
+    'field_addition' => [
+        'extended_dates' => 'extendedDatesTransformer',
+    ],
 
 ];
