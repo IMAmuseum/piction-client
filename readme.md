@@ -1,18 +1,19 @@
 ## Piction Client
 
-Piction API SDK
-
-### Development Setup
-Add `imamuseum` folder to the root of your project.
-Clone this repo into `imamuseum` folder.
-Run `composer install` from inside `piction-client` folder to install vendor depen
+This package will work independently of the Laravel Framework.
 
 ### Composer Setup
-Set up `psr-4` autoload in `composer.json`:
 ```json
-"psr-4": {
-    "App\\": "app/",
-    "Imamuseum\\": "imamuseum/"
+{
+    "require": {
+        "imamuseum/piction-client": "dev-master@dev"
+    },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://bitbucket.org/imalab/piction-client.git"
+        }
+    ]
 }
 ```
 
@@ -27,4 +28,14 @@ PICTION_FORMAT=null
 PICTION_SURL=null
 ```
 
-### TODO: Add private repository composer installation instructions.
+## Laravel Specific
+
+### Service Provider
+In `config\app.php` add to the autoloaded providers -
+```php
+Imamuseum\PictionClient\PictionServiceProvider::class,
+```
+### Publish Config
+```php
+php artisan vendor:publish
+```
