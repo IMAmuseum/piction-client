@@ -25,7 +25,7 @@ class PictionTransformer
         }
         $newData = $this->checkNewData($newData);
         $newData = $this->transformFields($newData);
-        $newData = $this->addFields($newData);
+        if (! empty($this->field_addition)) $newData = $this->addFields($newData);
         $newData['images'] = $images;
         return $newData;
     }
