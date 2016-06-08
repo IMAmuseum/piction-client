@@ -34,16 +34,16 @@ class Piction
     {
         $this->helpers = new PictionHelpers();
 
-        if (class_exists('\\Dotenv\\Dotenv')){
+        if (file_exists(__DIR__.'/.env')) {
             $dotenv = new \Dotenv\Dotenv(__DIR__.'/..');
             $dotenv->load();
         }
 
-        $this->endpoint = getenv('PICTION_ENDPOINT_URL');
-        $this->username = getenv('PICTION_USERNAME');
-        $this->password = getenv('PICTION_PASSWORD');
-        $this->format   = getenv('PICTION_FORMAT');
-        $this->surl     = getenv('PICTION_SURL');
+        $this->endpoint = env('PICTION_ENDPOINT_URL');
+        $this->username = env('PICTION_USERNAME');
+        $this->password = env('PICTION_PASSWORD');
+        $this->format   = env('PICTION_FORMAT');
+        $this->surl     = env('PICTION_SURL');
 
         $this->piction_method = "";
         $this->params   = [];

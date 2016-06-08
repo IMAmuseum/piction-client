@@ -12,8 +12,20 @@ class PictionController
     {
         $this->transformer = new PictionTransformer();
         $this->piction = new Piction();
-        $this->getConfig();
         $this->image_url = getenv('PICTION_IMAGE_URL');
+
+        $config = $this->getConfig();
+        // Config items
+        $this->age = $config['age'];
+        $this->maxrows = $config['maxrows'];
+        $this->metatags = $config['metatags'];
+        $this->collection_id_field = $config['collection_id_field'];
+        $this->collection_id = $config['collection_id'];
+        // Transform Config items
+        $this->id_field = $config['id_field'];
+        $this->img_to_pull = $config['img_to_pull'];
+        $this->field_map = $config['field_map'];
+        $this->img_match = $config['img_match'];
     }
 
     public function getSpecificObject($id, $transform=true)
@@ -138,22 +150,12 @@ class PictionController
         if (function_exists("config")) {
             if (config('piction')) {
                 // use Laravel config/piction.php
-                $config = config('piction');
+                return config('piction');
             }
-        } else {
-            // use the package config
-            $config = require __DIR__ . '/../config/piction.php';
         }
 
-        $this->age = $config['age'];
-        $this->maxrows = $config['maxrows'];
-        $this->metatags = $config['metatags'];
-        $this->collection_id_field = $config['collection_id_field'];
-        $this->collection_id = $config['collection_id'];
-        // Transform Config items
-        $this->id_field = $config['id_field'];
-        $this->img_to_pull = $config['img_to_pull'];
-        $this->field_map = $config['field_map'];
-        $this->img_match = $config['img_match'];
+        // use the package config
+        $config = require __DIR__ . '/../config/piction.php';
+        return $config;
     }
 }
