@@ -96,6 +96,8 @@ class PictionTransformer
     public function getIds($data)
     {
         $data = json_decode($data, true);
+        if (empty($data['r'])) return 'error';
+
         $newData['results'] = [];
         // Loop through results items
         foreach($data['r'] as $result) {
