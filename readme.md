@@ -3,18 +3,8 @@
 This package will work independently of the Laravel Framework.
 
 ### Composer Setup
-```json
-{
-    "require": {
-        "imamuseum/piction-client": "dev-master@dev"
-    },
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://bitbucket.org/imalab/piction-client.git"
-        }
-    ]
-}
+```sh
+composer require imamuseum/piction-client
 ```
 
 ### Environmental Variables Setup
