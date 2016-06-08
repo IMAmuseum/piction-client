@@ -1,5 +1,14 @@
 {
     "name": "imamuseum/piction-client",
+    "description": "Export data from Piction Digital Asset Management System via its API.",
+    "license": "MIT",
+    "authors" : [
+        {
+            "name": "IMA Lab",
+            "email": "imalab@imamuseum.org",
+            "homepage": "http://lab.imamuseum.org"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "Imamuseum\\PictionClient\\": "src/"
